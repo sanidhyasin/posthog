@@ -49,10 +49,7 @@ from posthog.temporal.data_imports.sources.common.config import Config
 from posthog.temporal.data_imports.sources.common.schema import SourceSchema
 from posthog.temporal.data_imports.sources.common.sql import filter_dwh_columns_by_enabled_columns, sql_schema_metadata
 from posthog.temporal.data_imports.sources.common.sql.base import SQLSource
-from posthog.temporal.data_imports.sources.custom.source import (
-    is_custom_source_available_for_team,
-    manifest_request_hosts,
-)
+from posthog.temporal.data_imports.sources.custom.source import manifest_request_hosts
 from posthog.temporal.data_imports.sources.postgres.cdc.slot_manager import cdc_pg_connection
 from posthog.temporal.data_imports.sources.postgres.postgres import get_primary_key_columns, source_requires_ssl
 from posthog.temporal.data_imports.sources.postgres.source import PostgresSource
@@ -1135,11 +1132,6 @@ class ExternalDataSourceViewSet(TeamAndOrgViewSetMixin, AccessControlViewSetMixi
                 if isinstance(value, str):
                     payload[key] = value.strip()
         source_type_model = ExternalDataSourceType(source_type)
-        if source_type_model == ExternalDataSourceType.CUSTOM and not is_custom_source_available_for_team(self.team_id):
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={"message": "Custom REST source is not available for this team."},
-            )
         source = SourceRegistry.get_source(source_type_model)
         is_valid, errors = source.validate_config(payload)
         if not is_valid:

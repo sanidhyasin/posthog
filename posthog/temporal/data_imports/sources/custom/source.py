@@ -2,8 +2,6 @@ import json
 from typing import Any, Literal, Optional, cast
 from urllib.parse import urlparse
 
-from django.conf import settings
-
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from requests import Response
 from urllib3.util.retry import Retry
@@ -55,17 +53,6 @@ PROBE_MAX_RESOURCES = 5
 PROBE_ERROR_SNIPPET_BYTES = 2048
 # Upper bound on declared resources, matching business_knowledge MAX_URLS_PER_SOURCE.
 MAX_MANIFEST_RESOURCES = 500
-
-
-def is_custom_source_available_for_team(team_id: int | None) -> bool:
-    # While the custom source is in development it is restricted to a single
-    # pilot team on PostHog Cloud US. The wizard listing is gated client-side by
-    # the `dwh_custom_source` feature flag; this is the server-side enforcement
-    # that rejects creation from anywhere else (other cloud regions, self-hosted).
-    # Temporary: remove this gate once SSRF protection for arbitrary user-supplied
-    # URLs is enabled, after which the source can open up to all teams.
-    allowed_team_id = 2
-    return settings.CLOUD_DEPLOYMENT == "US" and team_id == allowed_team_id
 
 
 class ManifestValidationError(ValueError):
