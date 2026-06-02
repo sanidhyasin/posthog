@@ -16608,6 +16608,84 @@ export namespace Schemas {
     } as const;
 
     /**
+     * * `pending` - pending
+    * `in_progress` - in_progress
+    * `completed` - completed
+    * `failed` - failed
+     */
+    export type ExperimentMetricsRecalculationStatusEnum = typeof ExperimentMetricsRecalculationStatusEnum[keyof typeof ExperimentMetricsRecalculationStatusEnum];
+
+
+    export const ExperimentMetricsRecalculationStatusEnum = {
+      Pending: 'pending',
+      InProgress: 'in_progress',
+      Completed: 'completed',
+      Failed: 'failed',
+    } as const;
+
+    /**
+     * * `manual` - manual
+    * `experiment_launch` - experiment_launch
+    * `experiment_stop` - experiment_stop
+    * `experiment_update` - experiment_update
+     */
+    export type TriggerEnum = typeof TriggerEnum[keyof typeof TriggerEnum];
+
+
+    export const TriggerEnum = {
+      Manual: 'manual',
+      ExperimentLaunch: 'experiment_launch',
+      ExperimentStop: 'experiment_stop',
+      ExperimentUpdate: 'experiment_update',
+    } as const;
+
+    /**
+     * Serializer for metrics recalculation status responses.
+     */
+    export interface ExperimentMetricsRecalculation {
+      /** Unique identifier for this recalculation job */
+      readonly id: string;
+      /** ID of the experiment being recalculated */
+      readonly experiment_id: number;
+      /** Current status of the recalculation job
+
+      * `pending` - pending
+      * `in_progress` - in_progress
+      * `completed` - completed
+      * `failed` - failed */
+      readonly status: ExperimentMetricsRecalculationStatusEnum;
+      /** Total number of metrics to recalculate */
+      readonly total_metrics: number;
+      /** Number of metrics successfully recalculated */
+      readonly completed_metrics: number;
+      /** Number of metrics that failed to recalculate */
+      readonly failed_metrics: number;
+      /** Map of metric_uuid to error details */
+      readonly metric_errors: unknown;
+      /** What triggered this recalculation
+
+      * `manual` - manual
+      * `experiment_launch` - experiment_launch
+      * `experiment_stop` - experiment_stop
+      * `experiment_update` - experiment_update */
+      readonly trigger: TriggerEnum;
+      /** When the job was created */
+      readonly created_at: string;
+      /**
+         * When processing started
+         * @nullable
+         */
+      readonly started_at: string | null;
+      /**
+         * When processing completed
+         * @nullable
+         */
+      readonly completed_at: string | null;
+      /** True if returning an existing job rather than a newly created one */
+      readonly is_existing: boolean;
+    }
+
+    /**
      * Mixin for serializers to add user access control fields
      */
     export interface ExperimentSavedMetric {
@@ -36679,6 +36757,19 @@ export namespace Schemas {
     export interface QuotaLimitsResponse {
       /** Per-resource limit state keyed by `QuotaResource` value. Currently only `ai_credits` is reported; additional resources may be added. */
       limited: QuotaLimitsResponseLimited;
+    }
+
+    /**
+     * Request body for triggering a metrics recalculation.
+     */
+    export interface RecalculateMetricsRequest {
+      /** What triggered this recalculation (manual is the default for user-initiated runs)
+
+      * `manual` - manual
+      * `experiment_launch` - experiment_launch
+      * `experiment_stop` - experiment_stop
+      * `experiment_update` - experiment_update */
+      trigger?: TriggerEnum;
     }
 
     export interface RecomputeResult {

@@ -653,6 +653,96 @@ export interface EndExperimentApi {
     conclusion_comment?: string | null
 }
 
+/**
+ * * `manual` - manual
+ * `experiment_launch` - experiment_launch
+ * `experiment_stop` - experiment_stop
+ * `experiment_update` - experiment_update
+ */
+export type TriggerEnumApi = (typeof TriggerEnumApi)[keyof typeof TriggerEnumApi]
+
+export const TriggerEnumApi = {
+    Manual: 'manual',
+    ExperimentLaunch: 'experiment_launch',
+    ExperimentStop: 'experiment_stop',
+    ExperimentUpdate: 'experiment_update',
+} as const
+
+/**
+ * Request body for triggering a metrics recalculation.
+ */
+export interface RecalculateMetricsRequestApi {
+    /** What triggered this recalculation (manual is the default for user-initiated runs)
+
+  * `manual` - manual
+  * `experiment_launch` - experiment_launch
+  * `experiment_stop` - experiment_stop
+  * `experiment_update` - experiment_update */
+    trigger?: TriggerEnumApi
+}
+
+/**
+ * * `pending` - pending
+ * `in_progress` - in_progress
+ * `completed` - completed
+ * `failed` - failed
+ */
+export type ExperimentMetricsRecalculationStatusEnumApi =
+    (typeof ExperimentMetricsRecalculationStatusEnumApi)[keyof typeof ExperimentMetricsRecalculationStatusEnumApi]
+
+export const ExperimentMetricsRecalculationStatusEnumApi = {
+    Pending: 'pending',
+    InProgress: 'in_progress',
+    Completed: 'completed',
+    Failed: 'failed',
+} as const
+
+/**
+ * Serializer for metrics recalculation status responses.
+ */
+export interface ExperimentMetricsRecalculationApi {
+    /** Unique identifier for this recalculation job */
+    readonly id: string
+    /** ID of the experiment being recalculated */
+    readonly experiment_id: number
+    /** Current status of the recalculation job
+
+  * `pending` - pending
+  * `in_progress` - in_progress
+  * `completed` - completed
+  * `failed` - failed */
+    readonly status: ExperimentMetricsRecalculationStatusEnumApi
+    /** Total number of metrics to recalculate */
+    readonly total_metrics: number
+    /** Number of metrics successfully recalculated */
+    readonly completed_metrics: number
+    /** Number of metrics that failed to recalculate */
+    readonly failed_metrics: number
+    /** Map of metric_uuid to error details */
+    readonly metric_errors: unknown
+    /** What triggered this recalculation
+
+  * `manual` - manual
+  * `experiment_launch` - experiment_launch
+  * `experiment_stop` - experiment_stop
+  * `experiment_update` - experiment_update */
+    readonly trigger: TriggerEnumApi
+    /** When the job was created */
+    readonly created_at: string
+    /**
+     * When processing started
+     * @nullable
+     */
+    readonly started_at: string | null
+    /**
+     * When processing completed
+     * @nullable
+     */
+    readonly completed_at: string | null
+    /** True if returning an existing job rather than a newly created one */
+    readonly is_existing: boolean
+}
+
 export interface ShipVariantApi {
     /** The conclusion of the experiment.
 
