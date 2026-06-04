@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("signals", "0027_migrate_posthog_ai_models"),
+        ("signals", "0029_wipe_legacy_scout_configs"),
     ]
 
     operations = [
