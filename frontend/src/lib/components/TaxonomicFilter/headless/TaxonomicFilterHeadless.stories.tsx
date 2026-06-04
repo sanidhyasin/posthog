@@ -117,3 +117,16 @@ export const SuggestedFiltersWithRecents: Story = {
         },
     },
 }
+
+export const SuggestedIsDefaultSurface: Story = {
+    render: () => (
+        <Container taxonomicGroupTypes={[TaxonomicFilterGroupType.Events, TaxonomicFilterGroupType.EventProperties]} />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'The caller requests Events + Event properties and does NOT ask for SuggestedFilters — but because more than one content group is requested, the Suggested tab is auto-injected as the first tab and is the default active surface. Single-purpose pickers (one content group) are left untouched.',
+            },
+        },
+    },
+}
