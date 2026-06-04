@@ -153,7 +153,7 @@ export const webAnalyticsHealthLogic = kea<webAnalyticsHealthLogicType>([
             __default: null as HealthIssuesResponse | null,
             loadHealthIssues: async (): Promise<HealthIssuesResponse> => {
                 return await api.get<HealthIssuesResponse>(
-                    `api/environments/${values.currentTeamId}/health_issues/?status=active&dismissed=false`
+                    `api/projects/${values.currentTeamId}/health_issues/?status=active&dismissed=false`
                 )
             },
         },
@@ -297,7 +297,7 @@ export const webAnalyticsHealthLogic = kea<webAnalyticsHealthLogicType>([
             })
 
             try {
-                await api.create(`api/environments/${values.currentTeamId}/health_issues/refresh/`)
+                await api.create(`api/projects/${values.currentTeamId}/health_issues/refresh/`)
                 breakpoint()
                 lemonToast.success('Refreshing health checks...', { autoClose: 2000 })
                 for (let i = 0; i < REFRESH_POLL_COUNT; i++) {
