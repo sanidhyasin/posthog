@@ -87,6 +87,24 @@ class TestFeatureFlagAnalytics(BaseTest, QueryMatchingTest):
             self.assertEqual(client.hgetall(f"posthog:decide_requests:other"), {})
 
     @patch("products.feature_flags.backend.flag_analytics.CACHE_BUCKET_SIZE", 10)
+    def test_increment_request_count_remote_config_shares_decide_bucket(self):
+        team_id = 3
+
+        with freeze_time("2022-05-07 12:23:07"):
+            for _ in range(4):
+                increment_request_count(team_id)
+            for _ in range(6):
+                increment_request_count(team_id, 1, FlagRequestType.REMOTE_CONFIG)
+
+            client = redis.get_client()
+
+            # Remote config fetches are billed as decide usage, so they accumulate in the decide bucket.
+            self.assertEqual(
+                client.hgetall(f"posthog:decide_requests:{team_id}"),
+                {b"165192618": b"10"},
+            )
+
+    @patch("products.feature_flags.backend.flag_analytics.CACHE_BUCKET_SIZE", 10)
     def test_capture_team_decide_usage(self):
         mock_capture = MagicMock()
         team_id = 3

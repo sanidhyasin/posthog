@@ -4137,6 +4137,9 @@ class FeatureFlagViewSet(
         if not feature_flag.is_remote_configuration:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+        # Bill every served remote config request as decide usage, encrypted or not.
+        increment_request_count(self.team.pk, 1, FlagRequestType.REMOTE_CONFIG)
+
         if not feature_flag.has_encrypted_payloads:
             payloads = feature_flag.filters.get("payloads", {})
             return Response(payloads.get("true") or None)
@@ -4147,10 +4150,6 @@ class FeatureFlagViewSet(
         decrypted_flag_payloads = get_decrypted_flag_payloads_protected(
             request, feature_flag.filters.get("payloads", {})
         )
-
-        sampling_rate = getattr(settings, "DECIDE_BILLING_SAMPLING_RATE", 1.0)
-        count = int(1 / sampling_rate)
-        increment_request_count(self.team.pk, count, FlagRequestType.REMOTE_CONFIG)
 
         return Response(decrypted_flag_payloads["true"] or None)
 

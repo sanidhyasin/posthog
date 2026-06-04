@@ -46,23 +46,26 @@ SDK_LIBRARIES = [
 # locally. It's not included in CI because of tricky patching freeze time in thread issues.
 
 
-def get_team_request_key(team_id: int, request_type: FlagRequestType) -> str:
-    if request_type == FlagRequestType.DECIDE:
-        return f"posthog:decide_requests:{team_id}"
+# Remote config fetches are billed as decide-equivalent flag requests, so they share the decide bucket.
+_DECIDE_BUCKET_TYPES = frozenset({FlagRequestType.DECIDE, FlagRequestType.REMOTE_CONFIG})
+
+
+def _request_bucket_prefix(request_type: FlagRequestType) -> str:
+    if request_type in _DECIDE_BUCKET_TYPES:
+        return "decide_requests"
     elif request_type == FlagRequestType.LOCAL_EVALUATION:
-        return f"posthog:local_evaluation_requests:{team_id}"
+        return "local_evaluation_requests"
     else:
         raise ValueError(f"Unknown request type: {request_type}")
+
+
+def get_team_request_key(team_id: int, request_type: FlagRequestType) -> str:
+    return f"posthog:{_request_bucket_prefix(request_type)}:{team_id}"
 
 
 def get_team_request_library_key(team_id: int, request_type: FlagRequestType, library: str) -> str:
     """Get the Redis key for SDK-specific request counts."""
-    if request_type == FlagRequestType.DECIDE:
-        return f"posthog:decide_requests:sdk:{team_id}:{library}"
-    elif request_type == FlagRequestType.LOCAL_EVALUATION:
-        return f"posthog:local_evaluation_requests:sdk:{team_id}:{library}"
-    else:
-        raise ValueError(f"Unknown request type: {request_type}")
+    return f"posthog:{_request_bucket_prefix(request_type)}:sdk:{team_id}:{library}"
 
 
 def increment_request_count(
