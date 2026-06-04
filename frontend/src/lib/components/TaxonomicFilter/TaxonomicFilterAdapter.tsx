@@ -51,6 +51,8 @@ export function TaxonomicFilterAdapter(props: TaxonomicFilterProps): JSX.Element
         searchQuery,
         initialSearchQuery,
         enableKeywordShortcuts,
+        excludedOperators,
+        selectingKeyOnly,
         selectFirstItem = true,
         width,
         height,
@@ -105,6 +107,8 @@ export function TaxonomicFilterAdapter(props: TaxonomicFilterProps): JSX.Element
                 minSearchQueryLength={minSearchQueryLength}
                 allowNonCapturedEvents={allowNonCapturedEvents}
                 enableKeywordShortcuts={enableKeywordShortcuts}
+                excludedOperators={excludedOperators}
+                selectingKeyOnly={selectingKeyOnly}
                 selectFirstItem={selectFirstItem}
             >
                 {!hideSearchInput && <TaxonomicFilterHeadless.Input />}

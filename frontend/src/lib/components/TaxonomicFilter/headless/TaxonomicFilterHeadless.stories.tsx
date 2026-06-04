@@ -7,8 +7,15 @@ import { taxonomicFilterMocksDecorator } from 'lib/components/TaxonomicFilter/__
 import { actionsModel } from '~/models/actionsModel'
 
 import { __clearTaxonomicResourceCache } from '../hooks/useTaxonomicResource'
+import { recentTaxonomicFiltersLogic } from '../recentTaxonomicFiltersLogic'
 import { TaxonomicFilterGroup, TaxonomicFilterGroupType, TaxonomicFilterValue } from '../types'
 import { TaxonomicFilterHeadless } from './index'
+
+interface SeedRecent {
+    groupType: TaxonomicFilterGroupType
+    groupName: string
+    value: string
+}
 
 const meta: Meta = {
     title: 'Filters/Taxonomic Filter (Headless)',
@@ -32,14 +39,33 @@ interface ContainerArgs {
     taxonomicGroupTypes: TaxonomicFilterGroupType[]
     initialSearchQuery?: string
     suggestedFiltersLabel?: string
+    seedRecents?: SeedRecent[]
 }
 
-function Container({ taxonomicGroupTypes, initialSearchQuery, suggestedFiltersLabel }: ContainerArgs): JSX.Element {
+function Container({
+    taxonomicGroupTypes,
+    initialSearchQuery,
+    suggestedFiltersLabel,
+    seedRecents,
+}: ContainerArgs): JSX.Element {
+    useMountedLogic(actionsModel)
+    const recentLogic = useMountedLogic(recentTaxonomicFiltersLogic)
     useState(() => {
         __clearTaxonomicResourceCache()
+        // Seed deterministic recents so the Suggested tab renders them in the
+        // snapshot. Recorded oldest-first; the reducer prepends, so the last
+        // entry leads.
+        recentLogic.actions.clearRecentFilters()
+        for (const recent of seedRecents ?? []) {
+            recentLogic.actions.recordRecentFilter({
+                groupType: recent.groupType,
+                groupName: recent.groupName,
+                value: recent.value,
+                item: { name: recent.value },
+            })
+        }
         return null
     })
-    useMountedLogic(actionsModel)
     const [lastPick, setLastPick] = useState<{
         group: string
         value: TaxonomicFilterValue | null
@@ -126,6 +152,25 @@ export const SuggestedIsDefaultSurface: Story = {
         docs: {
             description: {
                 story: 'The caller requests Events + Event properties and does NOT ask for SuggestedFilters — but because more than one content group is requested, the Suggested tab is auto-injected as the first tab and is the default active surface. Single-purpose pickers (one content group) are left untouched.',
+            },
+        },
+    },
+}
+
+export const SuggestedWithRecents: Story = {
+    render: () => (
+        <Container
+            taxonomicGroupTypes={[TaxonomicFilterGroupType.Events, TaxonomicFilterGroupType.EventProperties]}
+            seedRecents={[
+                { groupType: TaxonomicFilterGroupType.EventProperties, groupName: 'Event properties', value: 'plan' },
+                { groupType: TaxonomicFilterGroupType.Events, groupName: 'Events', value: 'signed up' },
+            ]}
+        />
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'With no query, the Suggested tab leads with the user’s recent selections (here a recent event and a recent property), each carrying its source group, before the rest of the tab. This is the no-query recents prefix ported from the legacy picker.',
             },
         },
     },
