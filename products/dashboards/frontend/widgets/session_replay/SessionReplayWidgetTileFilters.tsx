@@ -7,12 +7,8 @@ import { LemonSelect } from 'lib/lemon-ui/LemonSelect'
 
 import { WIDGET_DATE_RANGE_SELECT_OPTIONS, type WidgetDateFromValue } from '../../widget_types/configSchemas'
 import type { DashboardWidgetTileFiltersProps } from '../registry'
-import {
-    getAllowedWidgetFilterDefinitions,
-    sessionReplayWidgetFiltersSetup,
-    useWidgetTileConfigPersist,
-} from '../widgetFilters'
 import { WidgetPropertyFiltersSection } from '../WidgetPropertyFiltersSection'
+import { sessionReplayWidgetFiltersSetup, useWidgetTileConfigPersist } from '../widgetTileFiltersHooks'
 import {
     isWidgetTileFiltersReadOnly,
     WidgetDateRangeReadOnlyValue,
@@ -36,10 +32,12 @@ export function SessionReplayWidgetTileFilters({
     const dateFrom = (parsed.dateRange?.date_from ?? '-7d') as WidgetDateFromValue
     const widgetFilters = parsed.widgetFilters ?? {}
 
-    const { quickFilters } = useValues(quickFiltersLogic({ context: filterDefinitionsContext }))
+    const { quickFilters: projectFilterDefinitions } = useValues(
+        quickFiltersLogic({ context: filterDefinitionsContext })
+    )
     const filterDefinitions = useMemo(
-        () => getAllowedWidgetFilterDefinitions(quickFilters, isAllowed),
-        [quickFilters, isAllowed]
+        () => projectFilterDefinitions.filter(isAllowed),
+        [projectFilterDefinitions, isAllowed]
     )
 
     const configRef = useRef(config)

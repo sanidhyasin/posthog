@@ -15,12 +15,8 @@ import {
 
 import { WIDGET_DATE_RANGE_SELECT_OPTIONS, type WidgetDateFromValue } from '../../widget_types/configSchemas'
 import type { DashboardWidgetTileFiltersProps } from '../registry'
-import {
-    errorTrackingWidgetFiltersSetup,
-    getAllowedWidgetFilterDefinitions,
-    useWidgetTileConfigPersist,
-} from '../widgetFilters'
 import { WidgetPropertyFiltersSection } from '../WidgetPropertyFiltersSection'
+import { errorTrackingWidgetFiltersSetup, useWidgetTileConfigPersist } from '../widgetTileFiltersHooks'
 import {
     ErrorTrackingAssigneeReadOnlyValue,
     ErrorTrackingStatusReadOnlyValue,
@@ -48,10 +44,12 @@ export function ErrorTrackingWidgetTileFilters({
     const assignee = parsed.assignee ?? null
     const widgetFilters = parsed.widgetFilters ?? {}
 
-    const { quickFilters } = useValues(quickFiltersLogic({ context: filterDefinitionsContext }))
+    const { quickFilters: projectFilterDefinitions } = useValues(
+        quickFiltersLogic({ context: filterDefinitionsContext })
+    )
     const filterDefinitions = useMemo(
-        () => getAllowedWidgetFilterDefinitions(quickFilters, isAllowed),
-        [quickFilters, isAllowed]
+        () => projectFilterDefinitions.filter(isAllowed),
+        [projectFilterDefinitions, isAllowed]
     )
 
     const configRef = useRef(config)

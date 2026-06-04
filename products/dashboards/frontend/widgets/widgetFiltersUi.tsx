@@ -8,7 +8,7 @@ import { quickFiltersLogic } from 'lib/components/QuickFilters/quickFiltersLogic
 import type { QuickFilter } from '~/types'
 
 import type { WidgetFilterConfigRecord } from '../widget_types/configSchemas'
-import { errorTrackingWidgetFiltersSetup } from './widgetFilters'
+import { errorTrackingWidgetFiltersSetup } from './widgetTileFiltersHooks'
 
 export function buildWidgetFilterChipEntries(
     filterDefinitions: QuickFilter[],
