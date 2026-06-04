@@ -452,7 +452,9 @@ class IterableSourceConfig(config.Config):
 
 @config.config
 class JiraSourceConfig(config.Config):
-    pass
+    subdomain: str
+    email: str
+    api_token: str
 
 
 @config.config
