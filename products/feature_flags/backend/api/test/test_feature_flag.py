@@ -2034,12 +2034,17 @@ class TestFeatureFlag(APIBaseTest, ClickhouseTestMixin):
 
         self.client.logout()
 
+        client = redis.get_client()
+        client.delete(f"posthog:decide_requests:{self.team.pk}")
+
         response = self.client.get(
             f"/api/projects/{self.team.id}/feature_flags/my-remote-config-flag/remote_config",
             headers={"authorization": f"Bearer {personal_api_key}"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), '{"test": true}')
+        # Personal-key requests are the app's preview feature, not SDK usage, so they don't bill.
+        self.assertEqual(client.hgetall(f"posthog:decide_requests:{self.team.pk}"), {})
 
     def test_remote_config_with_project_secret_api_key(self):
         self.team.rotate_secret_token_and_save(user=self.user, is_impersonated_session=False)
