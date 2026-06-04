@@ -16608,10 +16608,10 @@ export namespace Schemas {
     } as const;
 
     /**
-     * * `pending` - pending
-    * `in_progress` - in_progress
-    * `completed` - completed
-    * `failed` - failed
+     * * `pending` - Pending
+    * `in_progress` - In Progress
+    * `completed` - Completed
+    * `failed` - Failed
      */
     export type ExperimentMetricsRecalculationStatusEnum = typeof ExperimentMetricsRecalculationStatusEnum[keyof typeof ExperimentMetricsRecalculationStatusEnum];
 
@@ -16624,15 +16624,15 @@ export namespace Schemas {
     } as const;
 
     /**
-     * * `manual` - manual
-    * `experiment_launch` - experiment_launch
-    * `experiment_stop` - experiment_stop
-    * `experiment_update` - experiment_update
+     * * `manual` - Manual
+    * `experiment_launch` - Experiment Launch
+    * `experiment_stop` - Experiment Stop
+    * `experiment_update` - Experiment Update
      */
-    export type TriggerEnum = typeof TriggerEnum[keyof typeof TriggerEnum];
+    export type ExperimentMetricsRecalculationTriggerEnum = typeof ExperimentMetricsRecalculationTriggerEnum[keyof typeof ExperimentMetricsRecalculationTriggerEnum];
 
 
-    export const TriggerEnum = {
+    export const ExperimentMetricsRecalculationTriggerEnum = {
       Manual: 'manual',
       ExperimentLaunch: 'experiment_launch',
       ExperimentStop: 'experiment_stop',
@@ -16684,26 +16684,26 @@ export namespace Schemas {
       readonly experiment_id: number;
       /** Current status of the recalculation job
 
-      * `pending` - pending
-      * `in_progress` - in_progress
-      * `completed` - completed
-      * `failed` - failed */
+      * `pending` - Pending
+      * `in_progress` - In Progress
+      * `completed` - Completed
+      * `failed` - Failed */
       readonly status: ExperimentMetricsRecalculationStatusEnum;
       /** Total number of metrics to recalculate */
       readonly total_metrics: number;
-      /** Number of metrics successfully recalculated */
+      /** Number of metrics with a COMPLETED result row in this run (derived, not stored) */
       readonly completed_metrics: number;
-      /** Number of metrics that failed to recalculate */
+      /** Number of failed metrics in this run (derived): FAILED result rows plus discovery-step failures that never made it to a result row */
       readonly failed_metrics: number;
       /** Map of metric_uuid to error details */
       readonly metric_errors: unknown;
       /** What triggered this recalculation
 
-      * `manual` - manual
-      * `experiment_launch` - experiment_launch
-      * `experiment_stop` - experiment_stop
-      * `experiment_update` - experiment_update */
-      readonly trigger: TriggerEnum;
+      * `manual` - Manual
+      * `experiment_launch` - Experiment Launch
+      * `experiment_stop` - Experiment Stop
+      * `experiment_update` - Experiment Update */
+      readonly trigger: ExperimentMetricsRecalculationTriggerEnum;
       /** When the job was created */
       readonly created_at: string;
       /**
@@ -36797,6 +36797,22 @@ export namespace Schemas {
     }
 
     /**
+     * * `manual` - manual
+    * `experiment_launch` - experiment_launch
+    * `experiment_stop` - experiment_stop
+    * `experiment_update` - experiment_update
+     */
+    export type RecalculateMetricsRequestTriggerEnum = typeof RecalculateMetricsRequestTriggerEnum[keyof typeof RecalculateMetricsRequestTriggerEnum];
+
+
+    export const RecalculateMetricsRequestTriggerEnum = {
+      Manual: 'manual',
+      ExperimentLaunch: 'experiment_launch',
+      ExperimentStop: 'experiment_stop',
+      ExperimentUpdate: 'experiment_update',
+    } as const;
+
+    /**
      * Request body for triggering a metrics recalculation.
      */
     export interface RecalculateMetricsRequest {
@@ -36806,7 +36822,7 @@ export namespace Schemas {
       * `experiment_launch` - experiment_launch
       * `experiment_stop` - experiment_stop
       * `experiment_update` - experiment_update */
-      trigger?: TriggerEnum;
+      trigger?: RecalculateMetricsRequestTriggerEnum;
     }
 
     export interface RecomputeResult {

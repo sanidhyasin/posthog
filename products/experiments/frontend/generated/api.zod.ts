@@ -215,11 +215,13 @@ export const ExperimentsEndCreateBody = /* @__PURE__ */ zod.object({
 })
 
 /**
- * Mixin for ViewSets to handle ApprovalRequired exceptions from decorated serializers.
+ * Trigger a batch recalculation of all metrics for this experiment.
 
-This mixin intercepts ApprovalRequired exceptions raised by the @approval_gate decorator
-on serializer methods and converts them into proper HTTP 409 Conflict responses with
-change request details.
+Returns 201 with the new pending recalculation, or 200 with the active one if a recalculation is
+already pending or in progress for this experiment. The response payload intentionally does not
+include the `results` array — at POST time the workflow has just been queued and no per-metric
+results exist yet. Clients should poll `GET metrics_recalculation/{id}/` for results as the workflow
+progresses.
  */
 export const experimentsMetricsRecalculationCreateBodyTriggerDefault = `manual`
 
