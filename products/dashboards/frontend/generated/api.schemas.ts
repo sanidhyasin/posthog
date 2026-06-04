@@ -7551,7 +7551,7 @@ export interface WidgetDateRangeApi {
 }
 
 /**
- * Widget filter selections keyed by filter id. For error_tracking_list, only filters named Team, Environment, URL path, or Temporal worker (or matching property names) are supported.
+ * Widget filter selections keyed by filter id. Each key must match the entry's filterId. Configure filters in the product UI first, then copy filter id, option id, and property name here.
  */
 export type ErrorTrackingListWidgetConfigApiWidgetFilters = { [key: string]: WidgetFilterConfigEntryApi }
 
@@ -7586,7 +7586,7 @@ export interface ErrorTrackingListWidgetConfigApi {
     status?: ErrorTrackingIssueStatusEnumApi
     /** Filter by assignee ({type: user|role, id}). Omit for any assignee. */
     assignee?: ErrorTrackingAssigneeApi | null
-    /** Widget filter selections keyed by filter id. For error_tracking_list, only filters named Team, Environment, URL path, or Temporal worker (or matching property names) are supported. */
+    /** Widget filter selections keyed by filter id. Each key must match the entry's filterId. Configure filters in the product UI first, then copy filter id, option id, and property name here. */
     widgetFilters?: ErrorTrackingListWidgetConfigApiWidgetFilters
     /** Relative date range for issues (date_from only on widgets). */
     dateRange?: WidgetDateRangeApi | null
@@ -7615,7 +7615,7 @@ export const SessionReplayListWidgetConfigOrderByEnumApi = {
 } as const
 
 /**
- * Widget filter selections keyed by filter id. Event property filters are applied to the recordings query.
+ * Widget filter selections keyed by filter id. Each key must match the entry's filterId. Configure filters in the product UI first, then copy filter id, option id, and property name here.
  */
 export type SessionReplayListWidgetConfigApiWidgetFilters = { [key: string]: WidgetFilterConfigEntryApi }
 
@@ -7642,7 +7642,7 @@ export interface SessionReplayListWidgetConfigApi {
     orderDirection?: OrderDirectionEnumApi
     /** Optional relative date range override. */
     dateRange?: WidgetDateRangeApi | null
-    /** Widget filter selections keyed by filter id. Event property filters are applied to the recordings query. */
+    /** Widget filter selections keyed by filter id. Each key must match the entry's filterId. Configure filters in the product UI first, then copy filter id, option id, and property name here. */
     widgetFilters?: SessionReplayListWidgetConfigApiWidgetFilters
     /** When omitted, follows the project default for filtering test accounts. */
     filterTestAccounts?: boolean
