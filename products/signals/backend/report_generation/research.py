@@ -124,7 +124,7 @@ class CodeReference(BaseModel):
     @classmethod
     def fields_must_not_be_empty(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("file_path, contents, and relevance_note must not be empty")
+            raise ValueError("must not be empty or whitespace-only")
         return v
 
     @model_validator(mode="after")
@@ -147,7 +147,7 @@ class CodeDiff(BaseModel):
     @classmethod
     def fields_must_not_be_empty(cls, v: str) -> str:
         if not v.strip():
-            raise ValueError("file_path, diff, and relevance_note must not be empty")
+            raise ValueError("must not be empty or whitespace-only")
         return v
 
 
