@@ -72,6 +72,7 @@ the row lists both.
 | granola          | HTTP                        | requests                                                        | ✅                          |
 | gorgias          | HTTP                        | requests                                                        | ✅                          |
 | hubspot          | HTTP                        | requests                                                        | ✅                          |
+| iterable         | HTTP                        | requests                                                        | ✅                          |
 | klaviyo          | HTTP                        | requests                                                        | ✅                          |
 | linear           | HTTP                        | requests                                                        | ✅                          |
 | lever            | HTTP                        | requests                                                        | ✅                          |
@@ -186,7 +187,6 @@ doesn't conflict with concurrent PRs.
 - helpscout
 - instagram
 - intercom
-- iterable
 - jira
 - kafka
 - launchdarkly
