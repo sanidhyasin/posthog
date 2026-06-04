@@ -1,4 +1,4 @@
-import { actions, kea, path, reducers, selectors } from 'kea'
+import { actions, kea, listeners, path, reducers, selectors } from 'kea'
 import { router } from 'kea-router'
 
 import { tabAwareActionToUrl } from 'lib/logic/scenes/tabAwareActionToUrl'
@@ -24,6 +24,8 @@ export const humanFriendlyTabName = (tab: ReplayTabs): string => {
             return 'Recordings'
         case ReplayTabs.Playlists:
             return 'Collections'
+        case ReplayTabs.Templates:
+            return 'Filter templates'
         case ReplayTabs.Settings:
             return 'Settings'
         default:
@@ -36,6 +38,7 @@ export const sessionReplaySceneLogic = kea<sessionReplaySceneLogicType>([
     tabAwareScene(),
     actions({
         setTab: (tab: ReplayTabs = ReplayTabs.Home) => ({ tab }),
+        hideNewBadge: true,
     }),
     reducers(() => ({
         tab: [
@@ -44,6 +47,21 @@ export const sessionReplaySceneLogic = kea<sessionReplaySceneLogicType>([
                 setTab: (_, { tab }) => tab,
             },
         ],
+        shouldShowNewBadge: [
+            true as boolean,
+            { persist: true },
+            {
+                hideNewBadge: () => false,
+            },
+        ],
+    })),
+
+    listeners(({ actions }) => ({
+        setTab: ({ tab }) => {
+            if (tab === ReplayTabs.Templates) {
+                actions.hideNewBadge()
+            }
+        },
     })),
 
     tabAwareActionToUrl(({ values }) => {

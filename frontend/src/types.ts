@@ -981,6 +981,7 @@ export enum SavedInsightsTabs {
 export enum ReplayTabs {
     Home = 'home',
     Playlists = 'playlists',
+    Templates = 'templates',
     Settings = 'settings',
 }
 
