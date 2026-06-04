@@ -4137,11 +4137,15 @@ class FeatureFlagViewSet(
         if not feature_flag.is_remote_configuration:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        # Bill every served remote config request as decide usage, encrypted or not.
-        increment_request_count(self.team.pk, 1, FlagRequestType.REMOTE_CONFIG)
+        # Only genuine SDK remote config fetches (project secret API key) count as decide usage.
+        # Session and personal-key requests are the app's own preview/decrypt feature, not customer
+        # usage, and a session-authenticated GET would otherwise be a CSRF-able billing increment.
+        should_bill = isinstance(request.successful_authenticator, ProjectSecretAPIKeyAuthentication)
 
         if not feature_flag.has_encrypted_payloads:
             payloads = feature_flag.filters.get("payloads", {})
+            if should_bill:
+                increment_request_count(self.team.pk, 1, FlagRequestType.REMOTE_CONFIG)
             return Response(payloads.get("true") or None)
 
         # Note: This decryption step is protected by the feature_flag:read scope, so we can assume the
@@ -4150,6 +4154,10 @@ class FeatureFlagViewSet(
         decrypted_flag_payloads = get_decrypted_flag_payloads_protected(
             request, feature_flag.filters.get("payloads", {})
         )
+
+        # Bill after a successful decryption so a decrypt failure (500) is never counted.
+        if should_bill:
+            increment_request_count(self.team.pk, 1, FlagRequestType.REMOTE_CONFIG)
 
         return Response(decrypted_flag_payloads["true"] or None)
 
