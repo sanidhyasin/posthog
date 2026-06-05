@@ -10,6 +10,7 @@ from posthog.hogql_queries.experiments import MULTIPLE_VARIANT_KEY
 from posthog.hogql_queries.experiments.base_query_utils import event_or_action_to_filter
 from posthog.hogql_queries.experiments.breakdown_injector import BreakdownInjector
 from posthog.hogql_queries.experiments.experiment_query_context import ExperimentQueryContext
+from posthog.hogql_queries.experiments.metric_breakdown_injector import MetricBreakdownInjector
 
 
 def _optimize_and_chain(expr: ast.Expr) -> ast.Expr:
@@ -59,7 +60,7 @@ class ExposureQueryBuilder:
     def __init__(
         self,
         context: ExperimentQueryContext,
-        breakdown_injector: BreakdownInjector | None = None,
+        breakdown_injector: BreakdownInjector | MetricBreakdownInjector | None = None,
         maturity_having_builder: Callable[[str], ast.Expr | None] | None = None,
         preaggregation_job_ids: list[str] | None = None,
     ):
@@ -284,8 +285,9 @@ class ExposureQueryBuilder:
         )
         assert isinstance(exposure_query, ast.SelectQuery)
 
-        # Inject breakdown columns into the exposure query if needed
-        if self.breakdown_injector:
+        # Inject breakdown columns into the exposure query if needed. The metric-event
+        # injector attributes from the metric event instead, so it keeps exposures breakdown-free.
+        if self.breakdown_injector and self.breakdown_injector.attributes_from_exposure():
             breakdown_exprs = self.breakdown_injector.build_breakdown_exprs(table_alias="")
 
             # Add breakdown columns to SELECT using argMin attribution

@@ -43,6 +43,7 @@ from posthog.hogql_queries.experiments.experiment_ratio_query_builder import Rat
 from posthog.hogql_queries.experiments.experiment_retention_query_builder import RetentionQueryBuilder
 from posthog.hogql_queries.experiments.exposure_query_logic import normalize_to_exposure_criteria
 from posthog.hogql_queries.experiments.funnel_step_builder import FunnelStepBuilder
+from posthog.hogql_queries.experiments.metric_breakdown_injector import MetricBreakdownInjector
 from posthog.hogql_queries.experiments.metric_source import MetricSourceInfo
 from posthog.hogql_queries.utils.query_date_range import QueryDateRange
 from posthog.models.team.team import Team
@@ -84,6 +85,7 @@ class ExperimentQueryBuilder:
             ExperimentMeanMetric | ExperimentFunnelMetric | ExperimentRatioMetric | ExperimentRetentionMetric
         ] = None,
         breakdowns: list[Breakdown] | None = None,
+        breakdown_injector: BreakdownInjector | MetricBreakdownInjector | None = None,
         only_count_matured_users: bool = False,
         funnel_steps_data_disabled: bool = False,
         cuped_config: CupedQueryConfig | None = None,
@@ -100,7 +102,14 @@ class ExperimentQueryBuilder:
         self.filter_test_accounts = filter_test_accounts
         self.multiple_variant_handling = multiple_variant_handling
         self.breakdowns = breakdowns or []
-        self.breakdown_injector = BreakdownInjector(self.breakdowns, metric) if metric else None
+        # Caller may supply a pre-built injector (e.g. the metric-event injector gated behind
+        # a feature flag); otherwise default to the property-from-exposure injector.
+        if breakdown_injector is not None:
+            self.breakdown_injector: BreakdownInjector | MetricBreakdownInjector | None = breakdown_injector
+        elif metric:
+            self.breakdown_injector = BreakdownInjector(self.breakdowns, metric)
+        else:
+            self.breakdown_injector = None
         self.preaggregation_job_ids: list[str] | None = None
         self.metric_events_preaggregation_job_ids: list[str] | None = None
         self.cuped_config = cuped_config or CupedQueryConfig()
