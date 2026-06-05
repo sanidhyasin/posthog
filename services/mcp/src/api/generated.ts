@@ -395,6 +395,7 @@ export namespace Schemas {
       personsJoinMode?: PersonsJoinMode | null;
       personsOnEventsMode?: PersonsOnEventsMode | null;
       propertyGroupsMode?: PropertyGroupsMode | null;
+      pushDownPredicates?: boolean | null;
       s3TableUseInvalidColumns?: boolean | null;
       /** Push a `session_id_v7 IN (SELECT … FROM events WHERE …)` predicate into the raw_sessions subquery to limit aggregation to sessions that participate in the outer events filter. */
       sessionIdPushdown?: boolean | null;
@@ -2176,6 +2177,7 @@ export namespace Schemas {
       /** Customizations for the appearance of result datasets. */
       resultCustomizations?: TrendsFilterResultCustomizations;
       showAlertThresholdLines?: boolean | null;
+      showAnnotations?: boolean | null;
       showConfidenceIntervals?: boolean | null;
       showLabelsOnSeries?: boolean | null;
       showLegend?: boolean | null;
@@ -2373,6 +2375,8 @@ export namespace Schemas {
       layout?: FunnelLayout | null;
       /** Customizations for the appearance of result datasets. */
       resultCustomizations?: FunnelsFilterResultCustomizations;
+      /** Whether to render annotations on the chart. Only applies to historical-trends funnels. */
+      showAnnotations?: boolean | null;
       /** Display linear regression trend lines on the chart (only for historical trends viz) */
       showTrendLines?: boolean | null;
       showValuesOnSeries?: boolean | null;
@@ -3770,6 +3774,31 @@ export namespace Schemas {
       version?: number | null;
     }
 
+    export interface _WidgetTileLayoutBoxOpenApi {
+      /** Column position in the dashboard grid (0-indexed). */
+      x?: number;
+      /** Row position in the dashboard grid (0-indexed). */
+      y?: number;
+      /** Width in grid columns. The desktop grid is 12 columns wide. */
+      w?: number;
+      /** Height in grid rows. */
+      h?: number;
+    }
+
+    export interface _WidgetTileLayoutsOpenApi {
+      /** Layout for the standard (desktop) breakpoint. The grid is 12 columns wide. */
+      sm?: _WidgetTileLayoutBoxOpenApi;
+      /** Layout for the small (mobile) breakpoint. The grid is 1 column wide. */
+      xs?: _WidgetTileLayoutBoxOpenApi;
+    }
+
+    export type ErrorTrackingListWidgetAddRequestOpenApiWidgetType = typeof ErrorTrackingListWidgetAddRequestOpenApiWidgetType[keyof typeof ErrorTrackingListWidgetAddRequestOpenApiWidgetType];
+
+
+    export const ErrorTrackingListWidgetAddRequestOpenApiWidgetType = {
+      ErrorTrackingList: 'error_tracking_list',
+    } as const;
+
     /**
      * * `last_seen` - last_seen
     * `first_seen` - first_seen
@@ -3890,6 +3919,31 @@ export namespace Schemas {
       filterTestAccounts?: boolean;
     }
 
+    export interface ErrorTrackingListWidgetAddRequestOpenApi {
+      /**
+         * Optional custom display name for the widget tile.
+         * @maxLength 400
+         * @nullable
+         */
+      name?: string | null;
+      /** Optional markdown description shown when show_description is enabled. */
+      description?: string;
+      /** Optional react-grid-layout positions keyed by breakpoint (sm, xs). */
+      layouts?: _WidgetTileLayoutsOpenApi;
+      /** Whether to show the description on the dashboard tile. */
+      show_description?: boolean;
+      widget_type: ErrorTrackingListWidgetAddRequestOpenApiWidgetType;
+      /** Configuration for the error tracking list widget. */
+      config: ErrorTrackingListWidgetConfig;
+    }
+
+    export type SessionReplayListWidgetAddRequestOpenApiWidgetType = typeof SessionReplayListWidgetAddRequestOpenApiWidgetType[keyof typeof SessionReplayListWidgetAddRequestOpenApiWidgetType];
+
+
+    export const SessionReplayListWidgetAddRequestOpenApiWidgetType = {
+      SessionReplayList: 'session_replay_list',
+    } as const;
+
     /**
      * * `activity_score` - activity_score
     * `click_count` - click_count
@@ -3937,34 +3991,7 @@ export namespace Schemas {
       filterTestAccounts?: boolean;
     }
 
-    export type DashboardWidgetConfig = ErrorTrackingListWidgetConfig | SessionReplayListWidgetConfig;
-
-    export interface TileLayoutBox {
-      /** Column position in the dashboard grid (0-indexed). */
-      x?: number;
-      /** Row position in the dashboard grid (0-indexed). */
-      y?: number;
-      /** Width in grid columns. The desktop grid is 12 columns wide. */
-      w?: number;
-      /** Height in grid rows. */
-      h?: number;
-    }
-
-    export interface TileLayouts {
-      /** Layout for the standard (desktop) breakpoint. The grid is 12 columns wide. */
-      sm?: TileLayoutBox;
-      /** Layout for the small (mobile) breakpoint. The grid is 1 column wide. */
-      xs?: TileLayoutBox;
-    }
-
-    export interface AddDashboardWidgetRequest {
-      /**
-         * Widget type identifier. Supported values: error_tracking_list, session_replay_list. Use dashboard-widget-catalog-list for config_schema_hints per type.
-         * @maxLength 64
-         */
-      widget_type: string;
-      /** Widget-specific configuration. Shape depends on widget_type; see dashboard-widget-catalog-list for config_schema_hints. Supported types: error_tracking_list, session_replay_list. */
-      config: DashboardWidgetConfig;
+    export interface SessionReplayListWidgetAddRequestOpenApi {
       /**
          * Optional custom display name for the widget tile.
          * @maxLength 400
@@ -3974,14 +4001,22 @@ export namespace Schemas {
       /** Optional markdown description shown when show_description is enabled. */
       description?: string;
       /** Optional react-grid-layout positions keyed by breakpoint (sm, xs). */
-      layouts?: TileLayouts;
+      layouts?: _WidgetTileLayoutsOpenApi;
       /** Whether to show the description on the dashboard tile. */
       show_description?: boolean;
+      widget_type: SessionReplayListWidgetAddRequestOpenApiWidgetType;
+      /** Configuration for the session replay list widget. */
+      config: SessionReplayListWidgetConfig;
     }
 
-    export interface AddDashboardWidgetsBatchRequest {
+    export type AddDashboardWidgetRequest = ErrorTrackingListWidgetAddRequestOpenApi | SessionReplayListWidgetAddRequestOpenApi;
+
+    /**
+     * OpenAPI-only batch-add schema with widget_type-discriminated config shapes for agents.
+     */
+    export interface AddDashboardWidgetsBatchRequestOpenApi {
       /**
-         * Widget tiles to add atomically (1–10). Use a single-element list to add one widget.
+         * Widget tiles to add atomically. Supported widget_type values: error_tracking_list, session_replay_list. Use dashboard-widget-catalog-list for config_schema_hints per type. (1–10 per request).
          * @minItems 1
          * @maxItems 10
          */
@@ -4595,6 +4630,7 @@ export namespace Schemas {
       GoogleCloudServiceAccount: 'google-cloud-service-account',
       GoogleCloudStorage: 'google-cloud-storage',
       GoogleAds: 'google-ads',
+      GoogleSearchConsole: 'google-search-console',
       GoogleSheets: 'google-sheets',
       LinkedinAds: 'linkedin-ads',
       Snapchat: 'snapchat',
@@ -6859,6 +6895,8 @@ export namespace Schemas {
       readonly last_modified_at: string;
       team: number;
     }
+
+    export type DashboardWidgetConfig = ErrorTrackingListWidgetConfig | SessionReplayListWidgetConfig;
 
     export interface DashboardWidget {
       readonly id: string;
@@ -10420,6 +10458,22 @@ export namespace Schemas {
       OffTopic: 'off-topic',
     } as const;
 
+    export interface TagCount {
+      /** The tag value. */
+      tag: string;
+      /** Number of succeeded observations carrying this tag. */
+      count: number;
+    }
+
+    export interface ClassifierStats {
+      /** Top fixed-vocabulary tags by emission count. */
+      fixed_ranked: TagCount[];
+      /** Top freeform tags by emission count. */
+      freeform_ranked: TagCount[];
+      /** Succeeded observations that emitted at least one tag. */
+      total_with_tags: number;
+    }
+
     /**
      * * `claude` - claude
      */
@@ -11408,6 +11462,15 @@ export namespace Schemas {
       readonly updated_at: string;
     }
 
+    export interface CoverageStats {
+      /** Distinct sessions observed within the last `recent_days` days. */
+      recent_sessions: number;
+      /** Distinct sessions observed overall. */
+      total_sessions: number;
+      /** Window size in days used for `recent_sessions`. */
+      recent_days: number;
+    }
+
     /**
      * * `single` - Single page
     * `sitemap` - Sitemap
@@ -11778,6 +11841,24 @@ export namespace Schemas {
       name: string;
       /** Raw text to index. Capped at 1 MB; larger payloads should be split into multiple sources or wait for URL/file support in Stage 2/3. */
       text: string;
+    }
+
+    export interface TileLayoutBox {
+      /** Column position in the dashboard grid (0-indexed). */
+      x?: number;
+      /** Row position in the dashboard grid (0-indexed). */
+      y?: number;
+      /** Width in grid columns. The desktop grid is 12 columns wide. */
+      w?: number;
+      /** Height in grid rows. */
+      h?: number;
+    }
+
+    export interface TileLayouts {
+      /** Layout for the standard (desktop) breakpoint. The grid is 12 columns wide. */
+      sm?: TileLayoutBox;
+      /** Layout for the small (mobile) breakpoint. The grid is 1 column wide. */
+      xs?: TileLayoutBox;
     }
 
     export interface CreateTextTileRequest {
@@ -12711,6 +12792,7 @@ export namespace Schemas {
     * `Chargebee` - Chargebee
     * `Clerk` - Clerk
     * `GoogleAds` - GoogleAds
+    * `GoogleSearchConsole` - GoogleSearchConsole
     * `TemporalIO` - TemporalIO
     * `DoIt` - DoIt
     * `GoogleSheets` - GoogleSheets
@@ -12863,6 +12945,7 @@ export namespace Schemas {
       Chargebee: 'Chargebee',
       Clerk: 'Clerk',
       GoogleAds: 'GoogleAds',
+      GoogleSearchConsole: 'GoogleSearchConsole',
       TemporalIO: 'TemporalIO',
       DoIt: 'DoIt',
       GoogleSheets: 'GoogleSheets',
@@ -13022,6 +13105,7 @@ export namespace Schemas {
       * `Chargebee` - Chargebee
       * `Clerk` - Clerk
       * `GoogleAds` - GoogleAds
+      * `GoogleSearchConsole` - GoogleSearchConsole
       * `TemporalIO` - TemporalIO
       * `DoIt` - DoIt
       * `GoogleSheets` - GoogleSheets
@@ -15169,6 +15253,16 @@ export namespace Schemas {
     }
 
     /**
+     * * `error_tracking_list` - error_tracking_list
+     */
+    export type ErrorTrackingListWidgetAddRequestOpenApiWidgetTypeEnum = typeof ErrorTrackingListWidgetAddRequestOpenApiWidgetTypeEnum[keyof typeof ErrorTrackingListWidgetAddRequestOpenApiWidgetTypeEnum];
+
+
+    export const ErrorTrackingListWidgetAddRequestOpenApiWidgetTypeEnum = {
+      ErrorTrackingList: 'error_tracking_list',
+    } as const;
+
+    /**
      * Recommendation payload, shape depends on type.
      */
     export type ErrorTrackingRecommendationMeta = { [key: string]: unknown };
@@ -15570,6 +15664,27 @@ export namespace Schemas {
       Boolean: 'boolean',
     } as const;
 
+    export type EvaluationConditionPropertiesItem = { [key: string]: unknown };
+
+    /**
+     * A trigger condition set controlling which generations an evaluation runs on.
+     */
+    export interface EvaluationCondition {
+      /**
+         * Stable identifier for this condition set.
+         * @maxLength 100
+         */
+      id: string;
+      /**
+         * Percentage (0-100) of matching events to sample for this evaluation. Defaults to 100.
+         * @minimum 0
+         * @maximum 100
+         */
+      rollout_percentage?: number;
+      /** Property filters (event or person) that scope which generations match this condition set. */
+      properties?: EvaluationConditionPropertiesItem[];
+    }
+
     /**
      * * `openai` - Openai
     * `anthropic` - Anthropic
@@ -15631,8 +15746,8 @@ export namespace Schemas {
       output_type: OutputTypeEnum;
       /** Output config. For 'boolean' output_type: {allows_na} to permit N/A results. */
       output_config?: EvaluationOutputConfig;
-      /** Optional trigger conditions to filter which events are evaluated. OR between condition sets, AND within each. */
-      conditions?: unknown;
+      /** Trigger conditions that filter which events are evaluated. OR between condition sets, AND within each. Each set is {id, rollout_percentage, properties[]} — `rollout_percentage` (0-100, defaults to 100) is the sampling field the dispatcher reads. */
+      conditions?: EvaluationCondition[];
       model_configuration?: ModelConfiguration | null;
       readonly created_at: string;
       readonly updated_at: string;
@@ -16834,6 +16949,7 @@ export namespace Schemas {
       * `Chargebee` - Chargebee
       * `Clerk` - Clerk
       * `GoogleAds` - GoogleAds
+      * `GoogleSearchConsole` - GoogleSearchConsole
       * `TemporalIO` - TemporalIO
       * `DoIt` - DoIt
       * `GoogleSheets` - GoogleSheets
@@ -18251,6 +18367,37 @@ export namespace Schemas {
       readonly resolved_at: string | null;
     }
 
+    export interface HeatmapEventItem {
+      /** @nullable */
+      session_id?: string | null;
+      distinct_id: string;
+      timestamp: string;
+      pointer_relative_x: number;
+      pointer_y: number;
+      current_url: string;
+      type: string;
+    }
+
+    export interface HeatmapEventsResponse {
+      results: HeatmapEventItem[];
+      total_count: number;
+      has_more: boolean;
+    }
+
+    export interface HeatmapFoldSummary {
+      /** Number of non-fixed interactions of this type on the page in the window (the population the above/below-the-fold split applies to; fixed-position elements are excluded since they're always on screen). */
+      total_count: number;
+      /** How many of those interactions happened below the user's initial viewport — i.e. they had to scroll to reach them. */
+      below_fold_count: number;
+      /** Percentage of non-fixed interactions that were below the initial viewport (0-100). A high value means engaged content sits off the first screen and is a candidate to move up. */
+      pct_below_fold: number;
+      /**
+         * Median viewport height in CSS pixels across the matched interactions — the typical fold line to recommend against. Null when there are no interactions.
+         * @nullable
+         */
+      median_viewport_height: number | null;
+    }
+
     export interface HeatmapResponseItem {
       count: number;
       pointer_y: number;
@@ -18258,17 +18405,15 @@ export namespace Schemas {
       pointer_target_fixed: boolean;
     }
 
-    export type HeatmapScreenshotResponseSnapshotsItem = { [key: string]: unknown };
-
     /**
      * * `screenshot` - Screenshot
     * `iframe` - Iframe
     * `recording` - Recording
      */
-    export type HeatmapScreenshotResponseTypeEnum = typeof HeatmapScreenshotResponseTypeEnum[keyof typeof HeatmapScreenshotResponseTypeEnum];
+    export type HeatmapType = typeof HeatmapType[keyof typeof HeatmapType];
 
 
-    export const HeatmapScreenshotResponseTypeEnum = {
+    export const HeatmapType = {
       Screenshot: 'screenshot',
       Iframe: 'iframe',
       Recording: 'recording',
@@ -18288,37 +18433,68 @@ export namespace Schemas {
       Failed: 'failed',
     } as const;
 
+    export interface HeatmapSnapshotMetadata {
+      /** Viewport width (CSS pixels) this screenshot was rendered at. */
+      width: number;
+      /** Whether the rendered image for this width is ready to fetch from the content endpoint. */
+      has_content: boolean;
+    }
+
     export interface HeatmapScreenshotResponse {
       readonly id: string;
+      /** Short, URL-safe identifier used as the lookup key for saved-heatmap routes. */
       readonly short_id: string;
       /**
+         * Human-readable label for the saved heatmap.
          * @maxLength 400
          * @nullable
          */
       name?: string | null;
-      /** @maxLength 2000 */
+      /**
+         * The page URL this saved heatmap renders and overlays data on.
+         * @maxLength 2000
+         */
       url: string;
       /**
-         * URL for fetching heatmap data
+         * URL whose heatmap data is overlaid on the screenshot (defaults to 'url').
          * @maxLength 2000
          * @nullable
          */
       data_url?: string | null;
+      /** Viewport widths (CSS pixels) the screenshot is rendered at. */
       target_widths?: unknown;
-      type?: HeatmapScreenshotResponseTypeEnum;
+      /** Render mode: 'screenshot', 'iframe', or 'recording'.
+
+      * `screenshot` - Screenshot
+      * `iframe` - Iframe
+      * `recording` - Recording */
+      type?: HeatmapType;
+      /** Screenshot generation status: 'processing', 'completed', or 'failed'.
+
+      * `processing` - Processing
+      * `completed` - Completed
+      * `failed` - Failed */
       readonly status: HeatmapScreenshotResponseStatusEnum;
+      /** Whether at least one rendered image is ready to fetch. */
       readonly has_content: boolean;
-      readonly snapshots: readonly HeatmapScreenshotResponseSnapshotsItem[];
+      /** Per-width render metadata. Fetch the actual image bytes for a width from the content endpoint. */
+      readonly snapshots: readonly HeatmapSnapshotMetadata[];
+      /** Soft-delete flag; deleted heatmaps are hidden from the list. */
       deleted?: boolean;
       readonly created_by: UserBasic;
       readonly created_at: string;
       readonly updated_at: string;
-      /** @nullable */
+      /**
+         * Error detail when screenshot generation failed, otherwise null.
+         * @nullable
+         */
       readonly exception: string | null;
     }
 
     export interface HeatmapsResponse {
       results: HeatmapResponseItem[];
+      /** Above/below-the-fold summary for the returned interactions. Present for click/rageclick/mousemove; omitted for scrolldepth. */
+      fold?: HeatmapFoldSummary | null;
     }
 
     export type HideViewedRecordings = typeof HideViewedRecordings[keyof typeof HideViewedRecordings];
@@ -19512,6 +19688,8 @@ export namespace Schemas {
       /** Cursor for fetching the next page of results */
       after?: string | null;
       dateRange: DateRange;
+      /** Omit the per-span `attributes` map from results to keep payloads compact */
+      excludeAttributes?: boolean | null;
       filterGroup?: PropertyGroupFilter | null;
       kind?: 'TraceSpansQuery';
       limit?: number | null;
@@ -20172,6 +20350,7 @@ export namespace Schemas {
     * `google-cloud-service-account` - Google Cloud Service Account
     * `google-cloud-storage` - Google Cloud Storage
     * `google-pubsub` - Google Pubsub
+    * `google-search-console` - Google Search Console
     * `google-sheets` - Google Sheets
     * `hubspot` - Hubspot
     * `intercom` - Intercom
@@ -20212,6 +20391,7 @@ export namespace Schemas {
       GoogleCloudServiceAccount: 'google-cloud-service-account',
       GoogleCloudStorage: 'google-cloud-storage',
       GooglePubsub: 'google-pubsub',
+      GoogleSearchConsole: 'google-search-console',
       GoogleSheets: 'google-sheets',
       Hubspot: 'hubspot',
       Intercom: 'intercom',
@@ -22026,6 +22206,15 @@ export namespace Schemas {
       FeatureFlag: 'FeatureFlag',
     } as const;
 
+    export interface MonitorStats {
+      /** Succeeded observations whose verdict was `yes`. */
+      yes_total: number;
+      /** Succeeded observations whose verdict was `no`. */
+      no_total: number;
+      /** Succeeded observations whose verdict was `inconclusive`. */
+      inconclusive_total: number;
+    }
+
     export interface MoveTileTile {
       /** Dashboard tile ID to move. */
       id: number;
@@ -22293,6 +22482,70 @@ export namespace Schemas {
       event_definition_id?: string | null;
     }
 
+    export interface ObservationStatusCounts {
+      /** Total observations in the filtered set. */
+      total: number;
+      /** Observations with `status=succeeded`. */
+      succeeded: number;
+      /** Observations with `status=failed`. */
+      failed: number;
+      /** Observations with `status=ineligible`. */
+      ineligible: number;
+      /** Observations not yet in a terminal status. */
+      in_flight: number;
+      /**
+         * Percentage of (succeeded + failed) observations that succeeded; ineligible rows are excluded. Null when no observations have completed.
+         * @nullable
+         */
+      success_rate: number | null;
+    }
+
+    export interface ScorerSummary {
+      /** Minimum observed score. */
+      min: number;
+      /** 25th-percentile score. */
+      p25: number;
+      /** Median score. */
+      median: number;
+      /** Mean score. */
+      mean: number;
+      /** 75th-percentile score. */
+      p75: number;
+      /** Maximum observed score. */
+      max: number;
+      /** Number of scored observations summarized. */
+      count: number;
+    }
+
+    export interface ScorerHistogram {
+      /** Bucket labels (one per histogram bar) spanning the scanner's configured scale. */
+      labels: string[];
+      /** Observation count per bucket; same length as `labels`. */
+      counts: number[];
+    }
+
+    export interface ScorerStats {
+      /** Score quantile summary; null when no observations have been scored. */
+      summary: ScorerSummary | null;
+      /** Score histogram; null when no observations have been scored. */
+      histogram: ScorerHistogram | null;
+    }
+
+    export interface ObservationStats {
+      /** Counts of observations by terminal status. */
+      status_counts: ObservationStatusCounts;
+      /** Session-level scanner coverage. */
+      coverage: CoverageStats;
+      /** All distinct tags (fixed + freeform) emitted by succeeded observations in the filtered set. */
+      available_tags: string[];
+      /** Monitor-type aggregates; null when the scanner is not a monitor. */
+      monitor: MonitorStats | null;
+      /** Classifier-type aggregates; null when the scanner is not a classifier. */
+      classifier: ClassifierStats | null;
+      /** Scorer-type aggregates; null when the scanner is not a scorer. */
+      scorer: ScorerStats | null;
+    }
+
     /**
      * * `pending` - Pending
     * `running` - Running
@@ -22467,6 +22720,11 @@ export namespace Schemas {
       enforce_2fa?: boolean | null;
       /** @nullable */
       members_can_invite?: boolean | null;
+      /**
+         * When True, organization members (below admin) are allowed to create new projects. Admins and owners can always create projects.
+         * @nullable
+         */
+      members_can_create_projects?: boolean | null;
       members_can_use_personal_api_keys?: boolean;
       allow_publicly_shared_resources?: boolean;
       readonly member_count: number;
@@ -23342,24 +23600,6 @@ export namespace Schemas {
       /** @nullable */
       previous?: string | null;
       results: HealthIssue[];
-    }
-
-    export interface PaginatedHeatmapScreenshotResponseList {
-      count: number;
-      /** @nullable */
-      next?: string | null;
-      /** @nullable */
-      previous?: string | null;
-      results: HeatmapScreenshotResponse[];
-    }
-
-    export interface PaginatedHeatmapsResponseList {
-      count: number;
-      /** @nullable */
-      next?: string | null;
-      /** @nullable */
-      previous?: string | null;
-      results: HeatmapsResponse[];
     }
 
     export interface PaginatedHogFlowMinimalList {
@@ -28074,8 +28314,8 @@ export namespace Schemas {
       output_type?: OutputTypeEnum;
       /** Output config. For 'boolean' output_type: {allows_na} to permit N/A results. */
       output_config?: PatchedEvaluationOutputConfig;
-      /** Optional trigger conditions to filter which events are evaluated. OR between condition sets, AND within each. */
-      conditions?: unknown;
+      /** Trigger conditions that filter which events are evaluated. OR between condition sets, AND within each. Each set is {id, rollout_percentage, properties[]} — `rollout_percentage` (0-100, defaults to 100) is the sampling field the dispatcher reads. */
+      conditions?: EvaluationCondition[];
       model_configuration?: ModelConfiguration | null;
       readonly created_at?: string;
       readonly updated_at?: string;
@@ -28605,37 +28845,6 @@ export namespace Schemas {
       readonly updated_at?: string;
       /** @nullable */
       readonly resolved_at?: string | null;
-    }
-
-    export type PatchedHeatmapScreenshotResponseSnapshotsItem = { [key: string]: unknown };
-
-    export interface PatchedHeatmapScreenshotResponse {
-      readonly id?: string;
-      readonly short_id?: string;
-      /**
-         * @maxLength 400
-         * @nullable
-         */
-      name?: string | null;
-      /** @maxLength 2000 */
-      url?: string;
-      /**
-         * URL for fetching heatmap data
-         * @maxLength 2000
-         * @nullable
-         */
-      data_url?: string | null;
-      target_widths?: unknown;
-      type?: HeatmapScreenshotResponseTypeEnum;
-      readonly status?: HeatmapScreenshotResponseStatusEnum;
-      readonly has_content?: boolean;
-      readonly snapshots?: readonly PatchedHeatmapScreenshotResponseSnapshotsItem[];
-      deleted?: boolean;
-      readonly created_by?: UserBasic;
-      readonly created_at?: string;
-      readonly updated_at?: string;
-      /** @nullable */
-      readonly exception?: string | null;
     }
 
     /**
@@ -29495,6 +29704,11 @@ export namespace Schemas {
       enforce_2fa?: boolean | null;
       /** @nullable */
       members_can_invite?: boolean | null;
+      /**
+         * When True, organization members (below admin) are allowed to create new projects. Admins and owners can always create projects.
+         * @nullable
+         */
+      members_can_create_projects?: boolean | null;
       members_can_use_personal_api_keys?: boolean;
       allow_publicly_shared_resources?: boolean;
       readonly member_count?: number;
@@ -30693,6 +30907,39 @@ export namespace Schemas {
       readonly created_by?: UserBasic;
       readonly created_at?: string;
       readonly updated_at?: string;
+    }
+
+    export interface PatchedSavedHeatmapRequest {
+      /**
+         * Human-readable label for the saved heatmap.
+         * @maxLength 400
+         * @nullable
+         */
+      name?: string | null;
+      /**
+         * Exact page URL to render and overlay heatmap data on. Wildcards are not allowed.
+         * @maxLength 2000
+         */
+      url?: string;
+      /**
+         * URL whose heatmap data is overlaid on the screenshot. Defaults to 'url' when omitted.
+         * @maxLength 2000
+         * @nullable
+         */
+      data_url?: string | null;
+      /**
+         * Viewport widths (px, 100-3000) to render the heatmap screenshot at — one render per width. Defaults to [320, 375, 425, 768, 1024, 1440, 1920] when omitted. At most 16 widths.
+         * @maxItems 16
+         */
+      widths?: number[];
+      /** Render mode: 'screenshot' (renders the page headlessly, default), 'iframe', or 'recording'. Only 'screenshot' generates image bytes.
+
+      * `screenshot` - Screenshot
+      * `iframe` - Iframe
+      * `recording` - Recording */
+      type?: HeatmapType;
+      /** Set true to soft-delete the saved heatmap. */
+      deleted?: boolean;
     }
 
     export interface PatchedScheduledChange {
@@ -36699,6 +36946,85 @@ export namespace Schemas {
       readonly updated_at: string;
     }
 
+    export interface SavedHeatmapListResponse {
+      results: HeatmapScreenshotResponse[];
+      /** Total number of saved heatmaps matching the filters. */
+      count: number;
+    }
+
+    export interface SavedHeatmapRequest {
+      /**
+         * Human-readable label for the saved heatmap.
+         * @maxLength 400
+         * @nullable
+         */
+      name?: string | null;
+      /**
+         * Exact page URL to render and overlay heatmap data on. Wildcards are not allowed.
+         * @maxLength 2000
+         */
+      url: string;
+      /**
+         * URL whose heatmap data is overlaid on the screenshot. Defaults to 'url' when omitted.
+         * @maxLength 2000
+         * @nullable
+         */
+      data_url?: string | null;
+      /**
+         * Viewport widths (px, 100-3000) to render the heatmap screenshot at — one render per width. Defaults to [320, 375, 425, 768, 1024, 1440, 1920] when omitted. At most 16 widths.
+         * @maxItems 16
+         */
+      widths?: number[];
+      /** Render mode: 'screenshot' (renders the page headlessly, default), 'iframe', or 'recording'. Only 'screenshot' generates image bytes.
+
+      * `screenshot` - Screenshot
+      * `iframe` - Iframe
+      * `recording` - Recording */
+      type?: HeatmapType;
+      /** Set true to soft-delete the saved heatmap. */
+      deleted?: boolean;
+    }
+
+    /**
+     * Distinct creators across all scanners on the team — feeds the `Created by` filter dropdown.
+     */
+    export interface ScannerCreatorsResponse {
+      /** Users who created at least one scanner on this team. Returned regardless of pagination state so the dropdown stays stable across pages. */
+      creators: UserBasic[];
+    }
+
+    /**
+     * Per-scanner-type count of enabled vs total scanners.
+     */
+    export interface ScannerTypeStats {
+      /** Number of enabled scanners of this type. */
+      enabled: number;
+      /** Number of scanners of this type (enabled + disabled). */
+      total: number;
+    }
+
+    /**
+     * One `ScannerTypeStats` per scanner type — explicit fields give callers a typed shape, not `Record<string, …>`.
+     */
+    export interface ScannerStatsByType {
+      monitor: ScannerTypeStats;
+      classifier: ScannerTypeStats;
+      scorer: ScannerTypeStats;
+      summarizer: ScannerTypeStats;
+    }
+
+    /**
+     * Team-wide scanner counts independent of any list-filter state.
+     */
+    export interface ScannerStatsResponse {
+      /** Total scanners on the team. */
+      total: number;
+      /** Number of enabled scanners on the team. */
+      enabled: number;
+      /** Per-scanner-type breakdown (monitor / classifier / scorer / summarizer). */
+      by_type: ScannerStatsByType;
+    }
+
     export interface ScoreDefinitionCreate {
       /**
          * Human-readable scorer name.
@@ -36957,6 +37283,16 @@ export namespace Schemas {
       readonly created_by: UserBasic;
       readonly team: number;
     }
+
+    /**
+     * * `session_replay_list` - session_replay_list
+     */
+    export type SessionReplayListWidgetAddRequestOpenApiWidgetTypeEnum = typeof SessionReplayListWidgetAddRequestOpenApiWidgetTypeEnum[keyof typeof SessionReplayListWidgetAddRequestOpenApiWidgetTypeEnum];
+
+
+    export const SessionReplayListWidgetAddRequestOpenApiWidgetTypeEnum = {
+      SessionReplayList: 'session_replay_list',
+    } as const;
 
     export interface SessionSummaries {
       /**
@@ -38139,6 +38475,24 @@ export namespace Schemas {
       conditions?: TaggerCondition[];
       model_configuration?: TaggerModelConfigurationWrite | null;
       deleted?: boolean;
+    }
+
+    export interface TaskFileRequest {
+      /** Destination folder path in the project tree (e.g. 'Tasks/Bugs'). Defaults to 'Tasks'. */
+      folder?: string;
+    }
+
+    export interface TaskFileResponse {
+      /** Identifier of the project-tree entry for this task. */
+      id: string;
+      /** Full slash-separated path of the filed task in the project tree. */
+      path: string;
+      /** File system entry type. Always 'task'. */
+      type: string;
+      /** Identifier of the task this entry points to. */
+      ref: string;
+      /** In-app link to the task. */
+      href: string;
     }
 
     /**
@@ -40100,6 +40454,8 @@ export namespace Schemas {
       rootSpans?: boolean;
       /** Number of child spans to prefetch per trace (1-100). */
       prefetchSpans?: number;
+      /** Omit the per-span attributes map from results to keep payloads compact. Defaults to false. */
+      excludeAttributes?: boolean;
     }
 
     export interface _TracingQueryRequest {
@@ -40110,6 +40466,8 @@ export namespace Schemas {
     export interface _TracingTraceRequest {
       /** Date range for the query. Defaults to last 24 hours. */
       dateRange?: _TracingDateRange;
+      /** Omit the per-span attributes map from results to keep payloads compact. Defaults to false. */
+      excludeAttributes?: boolean;
     }
 
     export interface _TracingTreeQueryBody {
@@ -41470,16 +41828,160 @@ export namespace Schemas {
     offset?: number;
     };
 
+    export type EnvironmentsHeatmapScreenshotsContentRetrieveParams = {
+    /**
+     * Viewport width (CSS pixels) to fetch. Defaults to 1024. If no exact render exists for this width the closest available one is returned.
+     */
+    width?: number;
+    };
+
     export type EnvironmentsHeatmapsListParams = {
     /**
-     * Number of results to return per page.
+     * How to aggregate counts: 'total_count' (every interaction, default) or 'unique_visitors' (distinct people).
+
+    * `unique_visitors` - unique_visitors
+    * `total_count` - total_count
+     * @minLength 1
+     */
+    aggregation?: EnvironmentsHeatmapsListAggregation;
+    /**
+     * JSON array of cohort IDs (e.g. '[123, 456]') to restrict results to people in those cohorts. Feature-flagged; ignored when the cohort filter is not enabled for the caller.
+     * @nullable
+     */
+    cohort_ids?: string | null;
+    /**
+     * Start of the window. Relative (e.g. '-7d', '-30d', '-1mStart') or an absolute 'YYYY-MM-DD' date. Defaults to '-7d'. Heatmap data is retained for 90 days.
+     * @minLength 1
+     */
+    date_from?: string;
+    /**
+     * End of the window, inclusive. Relative or absolute 'YYYY-MM-DD'. Defaults to today.
+     * @minLength 1
+     */
+    date_to?: string;
+    /**
+     * When true, exclude sessions from internal/test accounts using the project's test-account filters.
+     * @nullable
+     */
+    filter_test_accounts?: boolean | null;
+    /**
+     * When true (default), drop interactions recorded at the (0, 0) origin, which are usually noise.
+     */
+    hide_zero_coordinates?: boolean;
+    /**
+     * The interaction type to return. One of: 'click' (default), 'rageclick', 'mousemove', or 'scrolldepth'. Scrolldepth returns scroll buckets instead of x/y coordinates.
+     * @minLength 1
+     */
+    type?: string;
+    /**
+     * Match a single page by exact URL (trailing slash is ignored). Mutually exclusive with url_pattern.
+     * @minLength 1
+     */
+    url_exact?: string;
+    /**
+     * Match pages by regex against the full current_url (anchored automatically). Use this to aggregate across query strings or path segments. Mutually exclusive with url_exact.
+     * @minLength 1
+     */
+    url_pattern?: string;
+    /**
+     * Only include interactions captured at a viewport at most this wide, in CSS pixels.
+     */
+    viewport_width_max?: number;
+    /**
+     * Only include interactions captured at a viewport at least this wide, in CSS pixels. Use with viewport_width_max to isolate a device class (e.g. 360-768 for mobile).
+     */
+    viewport_width_min?: number;
+    };
+
+    export type EnvironmentsHeatmapsListAggregation = typeof EnvironmentsHeatmapsListAggregation[keyof typeof EnvironmentsHeatmapsListAggregation];
+
+
+    export const EnvironmentsHeatmapsListAggregation = {
+      UniqueVisitors: 'unique_visitors',
+      TotalCount: 'total_count',
+    } as const;
+
+    export type EnvironmentsHeatmapsEventsRetrieveParams = {
+    /**
+     * How to aggregate counts: 'total_count' (every interaction, default) or 'unique_visitors' (distinct people).
+
+    * `unique_visitors` - unique_visitors
+    * `total_count` - total_count
+     * @minLength 1
+     */
+    aggregation?: EnvironmentsHeatmapsEventsRetrieveAggregation;
+    /**
+     * JSON array of cohort IDs (e.g. '[123, 456]') to restrict results to people in those cohorts. Feature-flagged; ignored when the cohort filter is not enabled for the caller.
+     * @nullable
+     */
+    cohort_ids?: string | null;
+    /**
+     * Start of the window. Relative (e.g. '-7d', '-30d', '-1mStart') or an absolute 'YYYY-MM-DD' date. Defaults to '-7d'. Heatmap data is retained for 90 days.
+     * @minLength 1
+     */
+    date_from?: string;
+    /**
+     * End of the window, inclusive. Relative or absolute 'YYYY-MM-DD'. Defaults to today.
+     * @minLength 1
+     */
+    date_to?: string;
+    /**
+     * When true, exclude sessions from internal/test accounts using the project's test-account filters.
+     * @nullable
+     */
+    filter_test_accounts?: boolean | null;
+    /**
+     * When true (default), drop interactions recorded at the (0, 0) origin, which are usually noise.
+     */
+    hide_zero_coordinates?: boolean;
+    /**
+     * Maximum interactions to return (1-100).
+     * @minimum 1
+     * @maximum 100
      */
     limit?: number;
     /**
-     * The initial index from which to return the results.
+     * Number of interactions to skip, for pagination.
+     * @minimum 0
      */
     offset?: number;
+    /**
+     * JSON array of the heatmap coordinates to drill into, e.g. '[{"x": 0.5, "y": 100}]'. Each point needs 'x' (relative x, 0..1) and 'y' (absolute client-y pixels) matching values returned by the heatmaps list endpoint; an optional 'target_fixed' boolean matches fixed-position elements. Returns the individual session interactions behind those spots.
+     * @minLength 1
+     */
+    points: string;
+    /**
+     * The interaction type to return. One of: 'click' (default), 'rageclick', 'mousemove', or 'scrolldepth'. Scrolldepth returns scroll buckets instead of x/y coordinates.
+     * @minLength 1
+     */
+    type?: string;
+    /**
+     * Match a single page by exact URL (trailing slash is ignored). Mutually exclusive with url_pattern.
+     * @minLength 1
+     */
+    url_exact?: string;
+    /**
+     * Match pages by regex against the full current_url (anchored automatically). Use this to aggregate across query strings or path segments. Mutually exclusive with url_exact.
+     * @minLength 1
+     */
+    url_pattern?: string;
+    /**
+     * Only include interactions captured at a viewport at most this wide, in CSS pixels.
+     */
+    viewport_width_max?: number;
+    /**
+     * Only include interactions captured at a viewport at least this wide, in CSS pixels. Use with viewport_width_max to isolate a device class (e.g. 360-768 for mobile).
+     */
+    viewport_width_min?: number;
     };
+
+    export type EnvironmentsHeatmapsEventsRetrieveAggregation = typeof EnvironmentsHeatmapsEventsRetrieveAggregation[keyof typeof EnvironmentsHeatmapsEventsRetrieveAggregation];
+
+
+    export const EnvironmentsHeatmapsEventsRetrieveAggregation = {
+      UniqueVisitors: 'unique_visitors',
+      TotalCount: 'total_count',
+    } as const;
 
     export type EnvironmentsHogFlowTemplatesListParams = {
     /**
@@ -42302,6 +42804,7 @@ export namespace Schemas {
     * `google-cloud-service-account` - Google Cloud Service Account
     * `google-cloud-storage` - Google Cloud Storage
     * `google-pubsub` - Google Pubsub
+    * `google-search-console` - Google Search Console
     * `google-sheets` - Google Sheets
     * `hubspot` - Hubspot
     * `intercom` - Intercom
@@ -42353,6 +42856,7 @@ export namespace Schemas {
       GoogleCloudServiceAccount: 'google-cloud-service-account',
       GoogleCloudStorage: 'google-cloud-storage',
       GooglePubsub: 'google-pubsub',
+      GoogleSearchConsole: 'google-search-console',
       GoogleSheets: 'google-sheets',
       Hubspot: 'hubspot',
       Intercom: 'intercom',
@@ -43523,13 +44027,37 @@ export namespace Schemas {
 
     export type EnvironmentsSavedListParams = {
     /**
-     * Number of results to return per page.
+     * Filter by the creating user's ID.
+     */
+    created_by?: number;
+    /**
+     * Maximum saved heatmaps to return.
      */
     limit?: number;
     /**
-     * The initial index from which to return the results.
+     * Number to skip, for pagination.
      */
     offset?: number;
+    /**
+     * Field to order by, e.g. '-updated_at' (default) or 'created_at'.
+     * @minLength 1
+     */
+    order?: string;
+    /**
+     * Case-insensitive substring match on URL or name.
+     * @minLength 1
+     */
+    search?: string;
+    /**
+     * Filter by generation status: 'processing', 'completed', or 'failed'.
+     * @minLength 1
+     */
+    status?: string;
+    /**
+     * Filter by render mode: 'screenshot', 'iframe', or 'recording'.
+     * @minLength 1
+     */
+    type?: string;
     };
 
     export type EnvironmentsSessionRecordingExternalReferencesListParams = {
@@ -43817,7 +44345,7 @@ export namespace Schemas {
      */
     offset?: number;
     /**
-     * Sort observations by created_at, started_at, completed_at, or status. Prefix with `-` for descending.
+     * Sort observations. Plain keys: created_at, started_at, completed_at, status. JSONB keys: result_score (scorer), result_verdict (monitor), scanner_version. Prefix with `-` for descending.
      */
     order_by?: string;
     /**
@@ -43828,13 +44356,17 @@ export namespace Schemas {
 
     export type EnvironmentsVisionScannersListParams = {
     /**
+     * Filter to scanners created by the given user IDs (comma-separated).
+     */
+    created_by?: string;
+    /**
      * Filter to scanners that emit Signals.
      */
     emits_signals?: boolean;
     /**
-     * Filter to enabled vs disabled scanners.
+     * Filter by enabled state. Accepts a comma-separated list of `enabled`/`disabled`.
      */
-    enabled?: boolean;
+    enabled?: string;
     /**
      * Number of results to return per page.
      */
@@ -43844,29 +44376,18 @@ export namespace Schemas {
      */
     offset?: number;
     /**
-     * Sort scanners by name, created_at, updated_at, or scanner_type. Prefix with `-` for descending.
+     * Sort scanners by name, created_at, updated_at, scanner_type, enabled, sampling_rate, or created_by. Prefix with `-` for descending.
      */
     order_by?: string;
     /**
-     * Filter by scanner type (monitor, classifier, scorer, summarizer).
-
-    * `monitor` - Monitor
-    * `classifier` - Classifier
-    * `scorer` - Scorer
-    * `summarizer` - Summarizer
+     * Filter by scanner type (monitor, classifier, scorer, summarizer). Accepts a comma-separated list.
      */
-    scanner_type?: EnvironmentsVisionScannersListScannerType;
+    scanner_type?: string;
+    /**
+     * Case-insensitive substring match across name, description, and the prompt in scanner_config.
+     */
+    search?: string;
     };
-
-    export type EnvironmentsVisionScannersListScannerType = typeof EnvironmentsVisionScannersListScannerType[keyof typeof EnvironmentsVisionScannersListScannerType];
-
-
-    export const EnvironmentsVisionScannersListScannerType = {
-      Classifier: 'classifier',
-      Monitor: 'monitor',
-      Scorer: 'scorer',
-      Summarizer: 'summarizer',
-    } as const;
 
     export type EnvironmentsVisionScannersObservationsListParams = {
     /**
@@ -43878,7 +44399,7 @@ export namespace Schemas {
      */
     offset?: number;
     /**
-     * Sort observations by created_at, started_at, completed_at, or status. Prefix with `-` for descending.
+     * Sort observations. Plain keys: created_at, started_at, completed_at, status. JSONB keys: result_score (scorer), result_verdict (monitor), scanner_version. Prefix with `-` for descending.
      */
     order_by?: string;
     /**
@@ -43886,42 +44407,45 @@ export namespace Schemas {
      */
     session_id?: string;
     /**
-     * Filter by observation status.
-
-    * `pending` - Pending
-    * `running` - Running
-    * `succeeded` - Succeeded
-    * `failed` - Failed
-    * `ineligible` - Ineligible
+     * Filter by observation status. Accepts a comma-separated list.
      */
-    status?: EnvironmentsVisionScannersObservationsListStatus;
+    status?: string;
     /**
-     * Filter by trigger source (schedule or on_demand).
-
-    * `schedule` - Schedule
-    * `on_demand` - On demand
+     * Filter classifier observations whose fixed or freeform tags include any of the given values (comma-separated). Matches if the tag appears in either `tags` or `tags_freeform`.
      */
-    triggered_by?: EnvironmentsVisionScannersObservationsListTriggeredBy;
+    tags?: string;
+    /**
+     * Filter by trigger source (schedule or on_demand). Accepts a comma-separated list.
+     */
+    triggered_by?: string;
+    /**
+     * Filter monitor observations by verdict. Accepts a comma-separated list (e.g. `yes,inconclusive`).
+     */
+    verdict?: string;
     };
 
-    export type EnvironmentsVisionScannersObservationsListStatus = typeof EnvironmentsVisionScannersObservationsListStatus[keyof typeof EnvironmentsVisionScannersObservationsListStatus];
-
-
-    export const EnvironmentsVisionScannersObservationsListStatus = {
-      Failed: 'failed',
-      Ineligible: 'ineligible',
-      Pending: 'pending',
-      Running: 'running',
-      Succeeded: 'succeeded',
-    } as const;
-
-    export type EnvironmentsVisionScannersObservationsListTriggeredBy = typeof EnvironmentsVisionScannersObservationsListTriggeredBy[keyof typeof EnvironmentsVisionScannersObservationsListTriggeredBy];
-
-
-    export const EnvironmentsVisionScannersObservationsListTriggeredBy = {
-      OnDemand: 'on_demand',
-      Schedule: 'schedule',
-    } as const;
+    export type EnvironmentsVisionScannersObservationsStatsRetrieveParams = {
+    /**
+     * Filter to observations of a specific session recording.
+     */
+    session_id?: string;
+    /**
+     * Filter by observation status. Accepts a comma-separated list.
+     */
+    status?: string;
+    /**
+     * Filter classifier observations whose fixed or freeform tags include any of the given values (comma-separated). Matches if the tag appears in either `tags` or `tags_freeform`.
+     */
+    tags?: string;
+    /**
+     * Filter by trigger source (schedule or on_demand). Accepts a comma-separated list.
+     */
+    triggered_by?: string;
+    /**
+     * Filter monitor observations by verdict. Accepts a comma-separated list (e.g. `yes,inconclusive`).
+     */
+    verdict?: string;
+    };
 
     export type EnvironmentsWarehouseSavedQueriesListParams = {
     /**
@@ -46864,16 +47388,160 @@ export namespace Schemas {
     offset?: number;
     };
 
+    export type HeatmapScreenshotsContentRetrieveParams = {
+    /**
+     * Viewport width (CSS pixels) to fetch. Defaults to 1024. If no exact render exists for this width the closest available one is returned.
+     */
+    width?: number;
+    };
+
     export type HeatmapsListParams = {
     /**
-     * Number of results to return per page.
+     * How to aggregate counts: 'total_count' (every interaction, default) or 'unique_visitors' (distinct people).
+
+    * `unique_visitors` - unique_visitors
+    * `total_count` - total_count
+     * @minLength 1
+     */
+    aggregation?: HeatmapsListAggregation;
+    /**
+     * JSON array of cohort IDs (e.g. '[123, 456]') to restrict results to people in those cohorts. Feature-flagged; ignored when the cohort filter is not enabled for the caller.
+     * @nullable
+     */
+    cohort_ids?: string | null;
+    /**
+     * Start of the window. Relative (e.g. '-7d', '-30d', '-1mStart') or an absolute 'YYYY-MM-DD' date. Defaults to '-7d'. Heatmap data is retained for 90 days.
+     * @minLength 1
+     */
+    date_from?: string;
+    /**
+     * End of the window, inclusive. Relative or absolute 'YYYY-MM-DD'. Defaults to today.
+     * @minLength 1
+     */
+    date_to?: string;
+    /**
+     * When true, exclude sessions from internal/test accounts using the project's test-account filters.
+     * @nullable
+     */
+    filter_test_accounts?: boolean | null;
+    /**
+     * When true (default), drop interactions recorded at the (0, 0) origin, which are usually noise.
+     */
+    hide_zero_coordinates?: boolean;
+    /**
+     * The interaction type to return. One of: 'click' (default), 'rageclick', 'mousemove', or 'scrolldepth'. Scrolldepth returns scroll buckets instead of x/y coordinates.
+     * @minLength 1
+     */
+    type?: string;
+    /**
+     * Match a single page by exact URL (trailing slash is ignored). Mutually exclusive with url_pattern.
+     * @minLength 1
+     */
+    url_exact?: string;
+    /**
+     * Match pages by regex against the full current_url (anchored automatically). Use this to aggregate across query strings or path segments. Mutually exclusive with url_exact.
+     * @minLength 1
+     */
+    url_pattern?: string;
+    /**
+     * Only include interactions captured at a viewport at most this wide, in CSS pixels.
+     */
+    viewport_width_max?: number;
+    /**
+     * Only include interactions captured at a viewport at least this wide, in CSS pixels. Use with viewport_width_max to isolate a device class (e.g. 360-768 for mobile).
+     */
+    viewport_width_min?: number;
+    };
+
+    export type HeatmapsListAggregation = typeof HeatmapsListAggregation[keyof typeof HeatmapsListAggregation];
+
+
+    export const HeatmapsListAggregation = {
+      UniqueVisitors: 'unique_visitors',
+      TotalCount: 'total_count',
+    } as const;
+
+    export type HeatmapsEventsRetrieveParams = {
+    /**
+     * How to aggregate counts: 'total_count' (every interaction, default) or 'unique_visitors' (distinct people).
+
+    * `unique_visitors` - unique_visitors
+    * `total_count` - total_count
+     * @minLength 1
+     */
+    aggregation?: HeatmapsEventsRetrieveAggregation;
+    /**
+     * JSON array of cohort IDs (e.g. '[123, 456]') to restrict results to people in those cohorts. Feature-flagged; ignored when the cohort filter is not enabled for the caller.
+     * @nullable
+     */
+    cohort_ids?: string | null;
+    /**
+     * Start of the window. Relative (e.g. '-7d', '-30d', '-1mStart') or an absolute 'YYYY-MM-DD' date. Defaults to '-7d'. Heatmap data is retained for 90 days.
+     * @minLength 1
+     */
+    date_from?: string;
+    /**
+     * End of the window, inclusive. Relative or absolute 'YYYY-MM-DD'. Defaults to today.
+     * @minLength 1
+     */
+    date_to?: string;
+    /**
+     * When true, exclude sessions from internal/test accounts using the project's test-account filters.
+     * @nullable
+     */
+    filter_test_accounts?: boolean | null;
+    /**
+     * When true (default), drop interactions recorded at the (0, 0) origin, which are usually noise.
+     */
+    hide_zero_coordinates?: boolean;
+    /**
+     * Maximum interactions to return (1-100).
+     * @minimum 1
+     * @maximum 100
      */
     limit?: number;
     /**
-     * The initial index from which to return the results.
+     * Number of interactions to skip, for pagination.
+     * @minimum 0
      */
     offset?: number;
+    /**
+     * JSON array of the heatmap coordinates to drill into, e.g. '[{"x": 0.5, "y": 100}]'. Each point needs 'x' (relative x, 0..1) and 'y' (absolute client-y pixels) matching values returned by the heatmaps list endpoint; an optional 'target_fixed' boolean matches fixed-position elements. Returns the individual session interactions behind those spots.
+     * @minLength 1
+     */
+    points: string;
+    /**
+     * The interaction type to return. One of: 'click' (default), 'rageclick', 'mousemove', or 'scrolldepth'. Scrolldepth returns scroll buckets instead of x/y coordinates.
+     * @minLength 1
+     */
+    type?: string;
+    /**
+     * Match a single page by exact URL (trailing slash is ignored). Mutually exclusive with url_pattern.
+     * @minLength 1
+     */
+    url_exact?: string;
+    /**
+     * Match pages by regex against the full current_url (anchored automatically). Use this to aggregate across query strings or path segments. Mutually exclusive with url_exact.
+     * @minLength 1
+     */
+    url_pattern?: string;
+    /**
+     * Only include interactions captured at a viewport at most this wide, in CSS pixels.
+     */
+    viewport_width_max?: number;
+    /**
+     * Only include interactions captured at a viewport at least this wide, in CSS pixels. Use with viewport_width_max to isolate a device class (e.g. 360-768 for mobile).
+     */
+    viewport_width_min?: number;
     };
+
+    export type HeatmapsEventsRetrieveAggregation = typeof HeatmapsEventsRetrieveAggregation[keyof typeof HeatmapsEventsRetrieveAggregation];
+
+
+    export const HeatmapsEventsRetrieveAggregation = {
+      UniqueVisitors: 'unique_visitors',
+      TotalCount: 'total_count',
+    } as const;
 
     export type HogFlowTemplatesListParams = {
     /**
@@ -47719,6 +48387,7 @@ export namespace Schemas {
     * `google-cloud-service-account` - Google Cloud Service Account
     * `google-cloud-storage` - Google Cloud Storage
     * `google-pubsub` - Google Pubsub
+    * `google-search-console` - Google Search Console
     * `google-sheets` - Google Sheets
     * `hubspot` - Hubspot
     * `intercom` - Intercom
@@ -47770,6 +48439,7 @@ export namespace Schemas {
       GoogleCloudServiceAccount: 'google-cloud-service-account',
       GoogleCloudStorage: 'google-cloud-storage',
       GooglePubsub: 'google-pubsub',
+      GoogleSearchConsole: 'google-search-console',
       GoogleSheets: 'google-sheets',
       Hubspot: 'hubspot',
       Intercom: 'intercom',
@@ -49089,7 +49759,7 @@ export namespace Schemas {
      */
     excluded_properties?: string;
     /**
-     * Whether to return only properties for events in `event_names`
+     * Whether to return only properties for events in `event_names`. Note: this event scoping does not apply to feature flag properties ($feature/*), which are global and not tracked per-event; to retrieve feature flags use is_feature_flag=true instead.
      * @nullable
      */
     filter_by_event_names?: boolean | null;
@@ -49098,7 +49768,7 @@ export namespace Schemas {
      */
     group_type_index?: number;
     /**
-     * Whether to return only (or excluding) feature flag properties
+     * Whether to return only (or excluding) feature flag properties ($feature/*). Flags are global, not per-event, so they can't be scoped by event_names/filter_by_event_names — pass is_feature_flag=true to list them all.
      * @nullable
      */
     is_feature_flag?: boolean | null;
@@ -49192,13 +49862,37 @@ export namespace Schemas {
 
     export type SavedListParams = {
     /**
-     * Number of results to return per page.
+     * Filter by the creating user's ID.
+     */
+    created_by?: number;
+    /**
+     * Maximum saved heatmaps to return.
      */
     limit?: number;
     /**
-     * The initial index from which to return the results.
+     * Number to skip, for pagination.
      */
     offset?: number;
+    /**
+     * Field to order by, e.g. '-updated_at' (default) or 'created_at'.
+     * @minLength 1
+     */
+    order?: string;
+    /**
+     * Case-insensitive substring match on URL or name.
+     * @minLength 1
+     */
+    search?: string;
+    /**
+     * Filter by generation status: 'processing', 'completed', or 'failed'.
+     * @minLength 1
+     */
+    status?: string;
+    /**
+     * Filter by render mode: 'screenshot', 'iframe', or 'recording'.
+     * @minLength 1
+     */
+    type?: string;
     };
 
     export type ScheduledChangesListParams = {
@@ -49308,6 +50002,10 @@ export namespace Schemas {
      * Comma-separated ordering clauses. Each clause is a field name optionally prefixed with '-' for descending. Allowed fields: status, is_suggested_reviewer, signal_count, total_weight, priority, created_at, updated_at, id. Defaults to '-is_suggested_reviewer,status,-updated_at'.
      */
     ordering?: string;
+    /**
+     * Comma-separated list of priorities to include. Valid values: P0, P1, P2, P3, P4. Reports without a priority assignment are excluded when this filter is set.
+     */
+    priority?: string;
     /**
      * Case-insensitive substring match against report title and summary.
      */
@@ -49925,7 +50623,7 @@ export namespace Schemas {
      */
     offset?: number;
     /**
-     * Sort observations by created_at, started_at, completed_at, or status. Prefix with `-` for descending.
+     * Sort observations. Plain keys: created_at, started_at, completed_at, status. JSONB keys: result_score (scorer), result_verdict (monitor), scanner_version. Prefix with `-` for descending.
      */
     order_by?: string;
     /**
@@ -49936,13 +50634,17 @@ export namespace Schemas {
 
     export type VisionScannersListParams = {
     /**
+     * Filter to scanners created by the given user IDs (comma-separated).
+     */
+    created_by?: string;
+    /**
      * Filter to scanners that emit Signals.
      */
     emits_signals?: boolean;
     /**
-     * Filter to enabled vs disabled scanners.
+     * Filter by enabled state. Accepts a comma-separated list of `enabled`/`disabled`.
      */
-    enabled?: boolean;
+    enabled?: string;
     /**
      * Number of results to return per page.
      */
@@ -49952,29 +50654,18 @@ export namespace Schemas {
      */
     offset?: number;
     /**
-     * Sort scanners by name, created_at, updated_at, or scanner_type. Prefix with `-` for descending.
+     * Sort scanners by name, created_at, updated_at, scanner_type, enabled, sampling_rate, or created_by. Prefix with `-` for descending.
      */
     order_by?: string;
     /**
-     * Filter by scanner type (monitor, classifier, scorer, summarizer).
-
-    * `monitor` - Monitor
-    * `classifier` - Classifier
-    * `scorer` - Scorer
-    * `summarizer` - Summarizer
+     * Filter by scanner type (monitor, classifier, scorer, summarizer). Accepts a comma-separated list.
      */
-    scanner_type?: VisionScannersListScannerType;
+    scanner_type?: string;
+    /**
+     * Case-insensitive substring match across name, description, and the prompt in scanner_config.
+     */
+    search?: string;
     };
-
-    export type VisionScannersListScannerType = typeof VisionScannersListScannerType[keyof typeof VisionScannersListScannerType];
-
-
-    export const VisionScannersListScannerType = {
-      Classifier: 'classifier',
-      Monitor: 'monitor',
-      Scorer: 'scorer',
-      Summarizer: 'summarizer',
-    } as const;
 
     export type VisionScannersObservationsListParams = {
     /**
@@ -49986,7 +50677,7 @@ export namespace Schemas {
      */
     offset?: number;
     /**
-     * Sort observations by created_at, started_at, completed_at, or status. Prefix with `-` for descending.
+     * Sort observations. Plain keys: created_at, started_at, completed_at, status. JSONB keys: result_score (scorer), result_verdict (monitor), scanner_version. Prefix with `-` for descending.
      */
     order_by?: string;
     /**
@@ -49994,42 +50685,45 @@ export namespace Schemas {
      */
     session_id?: string;
     /**
-     * Filter by observation status.
-
-    * `pending` - Pending
-    * `running` - Running
-    * `succeeded` - Succeeded
-    * `failed` - Failed
-    * `ineligible` - Ineligible
+     * Filter by observation status. Accepts a comma-separated list.
      */
-    status?: VisionScannersObservationsListStatus;
+    status?: string;
     /**
-     * Filter by trigger source (schedule or on_demand).
-
-    * `schedule` - Schedule
-    * `on_demand` - On demand
+     * Filter classifier observations whose fixed or freeform tags include any of the given values (comma-separated). Matches if the tag appears in either `tags` or `tags_freeform`.
      */
-    triggered_by?: VisionScannersObservationsListTriggeredBy;
+    tags?: string;
+    /**
+     * Filter by trigger source (schedule or on_demand). Accepts a comma-separated list.
+     */
+    triggered_by?: string;
+    /**
+     * Filter monitor observations by verdict. Accepts a comma-separated list (e.g. `yes,inconclusive`).
+     */
+    verdict?: string;
     };
 
-    export type VisionScannersObservationsListStatus = typeof VisionScannersObservationsListStatus[keyof typeof VisionScannersObservationsListStatus];
-
-
-    export const VisionScannersObservationsListStatus = {
-      Failed: 'failed',
-      Ineligible: 'ineligible',
-      Pending: 'pending',
-      Running: 'running',
-      Succeeded: 'succeeded',
-    } as const;
-
-    export type VisionScannersObservationsListTriggeredBy = typeof VisionScannersObservationsListTriggeredBy[keyof typeof VisionScannersObservationsListTriggeredBy];
-
-
-    export const VisionScannersObservationsListTriggeredBy = {
-      OnDemand: 'on_demand',
-      Schedule: 'schedule',
-    } as const;
+    export type VisionScannersObservationsStatsRetrieveParams = {
+    /**
+     * Filter to observations of a specific session recording.
+     */
+    session_id?: string;
+    /**
+     * Filter by observation status. Accepts a comma-separated list.
+     */
+    status?: string;
+    /**
+     * Filter classifier observations whose fixed or freeform tags include any of the given values (comma-separated). Matches if the tag appears in either `tags` or `tags_freeform`.
+     */
+    tags?: string;
+    /**
+     * Filter by trigger source (schedule or on_demand). Accepts a comma-separated list.
+     */
+    triggered_by?: string;
+    /**
+     * Filter monitor observations by verdict. Accepts a comma-separated list (e.g. `yes,inconclusive`).
+     */
+    verdict?: string;
+    };
 
     export type VisualReviewReposListParams = {
     /**
